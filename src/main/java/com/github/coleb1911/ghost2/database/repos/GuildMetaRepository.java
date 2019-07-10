@@ -11,8 +11,7 @@ import java.util.Optional;
 @Repository
 public interface GuildMetaRepository extends CrudRepository<GuildMeta, Long> {
     @Override
-    @SuppressWarnings("unchecked")
-    GuildMeta save(GuildMeta guild);
+    <S extends GuildMeta> S save(S entity);
 
     @Override
     @Cacheable(value = "guilds", key = "#p0")

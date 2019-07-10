@@ -11,12 +11,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * POJO class containing relevant information for when a command is invoked
+ * Contains relevant information for when a command is invoked.
  */
 public class CommandContext {
     private final Guild guild;
     private final MessageChannel channel;
     private final Member invoker;
+    private final Member self;
     private final Message message;
     private final List<String> args;
     private final String trigger;
@@ -25,6 +26,7 @@ public class CommandContext {
         this.guild = event.getGuild().block();
         this.channel = event.getMessage().getChannel().block();
         this.invoker = event.getMember().orElse(null);
+        this.self = event.getClient().getSelf().block().asMember(guild.getId()).block();
         this.message = event.getMessage();
         this.args = extractArgs(message);
         this.trigger = args.remove(0);
@@ -42,6 +44,10 @@ public class CommandContext {
         return invoker;
     }
 
+    public Member getSelf() {
+        return self;
+    }
+
     public Message getMessage() {
         return message;
     }
@@ -56,6 +62,10 @@ public class CommandContext {
 
     public void reply(String message) {
         channel.createMessage(message).subscribe();
+    }
+
+    public void replyBlocking(String message) {
+        channel.createMessage(message).block();
     }
 
     private List<String> extractArgs(Message message) {

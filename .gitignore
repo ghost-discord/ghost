@@ -1,7 +1,7 @@
 # ghost2 specific files
-*.db
+**/*.db
 **/ghost.properties
-log/*.txt
+**/log/*.txt
 
 ### Gradle template
 .gradle
@@ -45,8 +45,6 @@ hs_err_pid*
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
-.idea/**/*
 
 # Gradle
 .idea/**/gradle.xml

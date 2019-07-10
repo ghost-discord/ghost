@@ -13,11 +13,13 @@ public class GuildMeta {
     public static final String DEFAULT_PREFIX = "g!";
 
     @Id
-    private long id;
+    @Column(name = "ID", unique = true, nullable = false)
+    private Long id;
 
     @Column(name = "PREFIX", nullable = false)
     private String prefix = DEFAULT_PREFIX;
 
+    // Hibernate requires a default constructor; fields are set with the setters instead of constructor
     public GuildMeta() {
     }
 
@@ -26,11 +28,11 @@ public class GuildMeta {
         this.prefix = prefix;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

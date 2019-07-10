@@ -1,7 +1,7 @@
 ![ghost2](https://github.com/cbryant02/cbryant02.github.io/raw/master/media/ghost2_banner.png)
 
 # ghost2
-[ghost](https://github.com/cbryant02/ghost)'s spritual successor, featuring magical Spring JPA-powered database code, a super-lightweight embedded H2 database, more flexible command modules, Discord4J 3, and approximately 85.4% less spaghetti.
+[ghost](https://github.com/cbryant02/ghost)'s spritual successor, featuring magical Spring JPA-powered database code, a super-lightweight embedded H2 database, more flexible module modules, Discord4J 3, and approximately 85.4% less spaghetti.
 
 Pull requests are still welcome. JavaDocs are not written yet, but the codebase isn't yet large, complicated, or spaghettified. With some knowledge of Spring, you'll find your way around fine.
 
