@@ -1,5 +1,6 @@
 package com.github.coleb1911.ghost2.commands.meta;
 
+import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
@@ -21,6 +22,7 @@ public class CommandContext {
     private final Message message;
     private final List<String> args;
     private final String trigger;
+    private final DiscordClient client;
 
     public CommandContext(MessageCreateEvent event) {
         this.guild = event.getGuild().block();
@@ -30,6 +32,11 @@ public class CommandContext {
         this.message = event.getMessage();
         this.args = extractArgs(message);
         this.trigger = args.remove(0);
+        this.client = event.getClient();
+    }
+
+    public DiscordClient getClient() {
+        return client;
     }
 
     public Guild getGuild() {
