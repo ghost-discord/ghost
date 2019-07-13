@@ -1,9 +1,11 @@
 package com.github.coleb1911.ghost2.commands;
 
+import com.github.coleb1911.ghost2.commands.meta.InvalidModuleException;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import org.reflections.Reflections;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,28 +25,26 @@ public class CommandRegistry {
     private static final String MODULE_PACKAGE = "com.github.coleb1911.ghost2.commands.modules";
     private static final String INSTANTIATION_ERROR_FORMAT = "Cannot construct an instance of %s; Module implementations must have a public constructor to function";
 
-    private static final Set<Class<? extends Module>> modules;
-    private static final List<Module> instantiated;
+    private final List<Module> instantiated;
 
-    static {
+    public CommandRegistry() {
         // Create instantiated object "cache"
         instantiated = new LinkedList<>();
 
         // Find all Modules
         Reflections reflector = new Reflections(MODULE_PACKAGE);
-        modules = reflector.getSubTypesOf(Module.class);
+        Set<Class<? extends Module>> modules = reflector.getSubTypesOf(Module.class);
 
         // Construct an instance of each Module
         for (Class<? extends Module> module : modules) {
             try {
                 instantiated.add(module.getDeclaredConstructor().newInstance());
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(String.format(INSTANTIATION_ERROR_FORMAT, instantiated.getClass().getName()));
+            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+                throw new InvalidModuleException(module, InvalidModuleException.Reason.NOT_INSTANTIABLE);
+            } catch (InvocationTargetException e) {
+                throw new InvalidModuleException(module, e.getTargetException());
             }
         }
-    }
-
-    private CommandRegistry() {
     }
 
     // TODO: Handle command aliases in CommandRegistry#getCommandInstance and CommandRegistry#getInfo
@@ -55,7 +55,7 @@ public class CommandRegistry {
      * @param name Command name
      * @return Command instance, or null if no command with that name exists
      */
-    static Module getCommandInstance(String name) {
+    Module getCommandInstance(String name) {
         for (Module module : instantiated) {
             if (name.equals(module.getInfo().getName())) {
                 instantiated.remove(module);
@@ -77,7 +77,7 @@ public class CommandRegistry {
      * @return Associated CommandInfo, or null if no command with that name exists
      * @see #getAllInfo()
      */
-    public static ModuleInfo getInfo(String name) {
+    public ModuleInfo getInfo(String name) {
         for (Module module : instantiated) {
             if (name.equals(module.getInfo().getName())) {
                 return module.getInfo();
@@ -91,7 +91,7 @@ public class CommandRegistry {
      *
      * @return Associated CommandInfo for all available Modules
      */
-    public static List<ModuleInfo> getAllInfo() {
+    public List<ModuleInfo> getAllInfo() {
         List<ModuleInfo> ret = new ArrayList<>();
         for (Module module : instantiated) {
             ret.add(module.getInfo());

@@ -10,6 +10,7 @@ import discord4j.core.object.entity.MessageChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Contains relevant information for when a command is invoked.
@@ -25,10 +26,10 @@ public class CommandContext {
     private final DiscordClient client;
 
     public CommandContext(MessageCreateEvent event) {
-        this.guild = event.getGuild().block();
+        this.guild = Objects.requireNonNull(event.getGuild().block());
         this.channel = event.getMessage().getChannel().block();
         this.invoker = event.getMember().orElse(null);
-        this.self = event.getClient().getSelf().block().asMember(guild.getId()).block();
+        this.self = Objects.requireNonNull(event.getClient().getSelf().block()).asMember(guild.getId()).block();
         this.message = event.getMessage();
         this.args = extractArgs(message);
         this.trigger = args.remove(0);

@@ -17,7 +17,18 @@ repositories {
 }
 
 dependencies {
-    // Misc libraries
+    // Spring
+    // Logback is excluded in order to avoid conflict with TinyLog
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.6.RELEASE') {
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
+    implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.1.9.RELEASE'
+
+    // Hibernate
+    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
+    implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.3.Final'
+
+    // Other libraries & APIs
     implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.0.7'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.10'
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
@@ -25,17 +36,8 @@ dependencies {
     implementation group: 'org.tinylog', name: 'slf4j-binding', version: '1.3.6'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.3.1'
     implementation group: 'com.h2database', name: 'h2', version: '1.4.199'
-
-    // Spring
-    // Logback is excluded in order to avoid conflict with TinyLog
-    api(group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.6.RELEASE') {
-        exclude group: 'ch.qos.logback', module: 'logback-classic'
-    }
-    api group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.1.9.RELEASE'
-
-    // Hibernate
-    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
-    implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.3.Final'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
 }
 
 bootJar {

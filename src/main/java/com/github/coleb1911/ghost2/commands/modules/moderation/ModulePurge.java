@@ -3,15 +3,19 @@ package com.github.coleb1911.ghost2.commands.modules.moderation;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
 
-public class ModulePurge extends Module {
+public final class ModulePurge extends Module {
+    @ReflectiveAccess
     public ModulePurge() {
         super(new ModuleInfo.Builder(ModulePurge.class)
                 .withName("purge")
                 .withDescription("Clear messages from a channel")
-                .withBotPermissions(PermissionSet.of(Permission.MANAGE_MESSAGES)));
+                .withBotPermissions(PermissionSet.of(Permission.MANAGE_MESSAGES))
+                .withUserPermissions(PermissionSet.of(Permission.MANAGE_MESSAGES))
+                .withAliases("prune"));
     }
 
     @Override

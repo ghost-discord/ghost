@@ -4,13 +4,13 @@ import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.CommandType;
 import com.github.coleb1911.ghost2.commands.meta.Module;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.commands.modules.operator.ModuleClaimOperator;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
-import org.pmw.tinylog.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
@@ -25,21 +25,18 @@ import java.util.concurrent.Executors;
 @Component
 @Configurable
 public class CommandDispatcher {
+    private final CommandRegistry registry;
+    private final ExecutorService commandExecutor;
     @Autowired
     private GuildMetaRepository guildRepo;
-    private ExecutorService commandExecutor;
 
     /**
      * Construct a new CommandDispatcher.
      */
+    @ReflectiveAccess
     public CommandDispatcher() {
-        // Load CommandRegistry & create a thread pool
-        try {
-            Class.forName("com.github.coleb1911.ghost2.commands.CommandRegistry");
-        } catch (ClassNotFoundException e) {
-            Logger.error("FATAL: Couldn't locate CommandRegistry on classpath");
-            Ghost2Application.getApplicationInstance().exit(1);
-        }
+        // Initialize command registry and thread pool
+        registry = new CommandRegistry();
         commandExecutor = Executors.newCachedThreadPool();
     }
 
@@ -58,19 +55,25 @@ public class CommandDispatcher {
         // GuildMeta shouldn't be null, otherwise we wouldn't have received the event;
         //   we still null-check to be safe and get rid of the warning
         GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElse(null);
-        if (null == meta) return;
+        if (null == meta) {
+            return;
+        }
         String prefix = meta.getPrefix();
 
         // Check for prefix & isolate the command name if present
         String trigger = ctx.getTrigger();
         String commandName;
-        if (trigger.indexOf(prefix) == 0)
+        if (trigger.indexOf(prefix) == 0) {
             commandName = trigger.replace(prefix, "");
-        else return;
+        } else {
+            return;
+        }
 
-        // Get & null-check module instance
-        final Module module = CommandRegistry.getCommandInstance(commandName);
-        if (null == module) return;
+        // Get & null-check Module instance
+        final Module module = registry.getCommandInstance(commandName);
+        if (null == module) {
+            return;
+        }
 
         // Check user's permissions
         PermissionSet invokerPerms = ctx.getInvoker().getBasePermissions().block();
@@ -109,5 +112,9 @@ public class CommandDispatcher {
 
         // Finally kick off command thread if all checks are passed
         commandExecutor.execute(() -> module.invoke(ctx));
+    }
+
+    public CommandRegistry getRegistry() {
+        return registry;
     }
 }

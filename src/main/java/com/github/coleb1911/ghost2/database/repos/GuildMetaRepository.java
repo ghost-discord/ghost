@@ -1,5 +1,6 @@
 package com.github.coleb1911.ghost2.database.repos;
 
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@ReflectiveAccess
 public interface GuildMetaRepository extends CrudRepository<GuildMeta, Long> {
     @Override
     <S extends GuildMeta> S save(S entity);

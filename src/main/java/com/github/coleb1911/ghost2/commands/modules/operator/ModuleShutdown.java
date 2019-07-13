@@ -4,8 +4,10 @@ import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
 public class ModuleShutdown extends Module {
+    @ReflectiveAccess
     public ModuleShutdown() {
         super(new ModuleInfo.Builder(ModuleShutdown.class)
                 .withName("shutdown")

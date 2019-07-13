@@ -1,5 +1,7 @@
 package com.github.coleb1911.ghost2.commands.meta;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * A single command module.
  * <p/>
@@ -21,15 +23,29 @@ public abstract class Module {
 
     private final ModuleInfo info;
 
+    /**
+     * Constructs a new Module. Should only be used by subclasses of Module.
+     *
+     * @param info ModuleInfo.Builder with the subclass' metadata
+     */
     protected Module(ModuleInfo.Builder info) {
         this.info = info.build();
     }
 
+    /**
+     * @return The Module info
+     * @see ModuleInfo
+     */
     public ModuleInfo getInfo() {
         return info;
     }
 
-    public abstract void invoke(CommandContext ctx);
+    /**
+     * Invokes the command.
+     *
+     * @param ctx Command context. Must be not-null.
+     */
+    public abstract void invoke(@NotNull CommandContext ctx);
 
     @Override
     public boolean equals(Object other) {

@@ -60,23 +60,6 @@ public class Ghost2Application implements ApplicationRunner {
     }
 
     /**
-     * Closes all resources, logs out the bot, and terminates the application gracefully.
-     *
-     * @param status Status code
-     */
-    public void exit(int status) {
-        // Log out bot
-        client.logout().block();
-
-        // Close Spring application context
-        SpringApplication.exit(ctx, () -> status);
-
-        // Exit
-        Logger.info("exiting");
-        System.exit(status);
-    }
-
-    /**
      * Starts the application.
      * <br/>
      * This should only be called by Spring Boot.
@@ -113,8 +96,9 @@ public class Ghost2Application implements ApplicationRunner {
         // Send MessageCreateEvents to CommandDispatcher
         client.getEventDispatcher().on(MessageCreateEvent.class)
                 .filter(e -> {
-                    if (e.getMember().isPresent())
+                    if (e.getMember().isPresent()) {
                         return !e.getMember().get().isBot();
+                    }
                     return false;
                 })
                 .subscribe(dispatcher::onMessageEvent);
@@ -130,8 +114,9 @@ public class Ghost2Application implements ApplicationRunner {
 
         // Get current bot operator, log notice if null
         operatorId = config.operatorId();
-        if (operatorId == -1)
+        if (operatorId == -1) {
             Logger.info(MESSAGE_SET_OPERATOR);
+        }
 
         // Log in and block main thread until bot logs out
         client.login()
@@ -142,6 +127,23 @@ public class Ghost2Application implements ApplicationRunner {
                         exit(1);
                     }
                 }).block();
+    }
+
+    /**
+     * Closes all resources, logs out the bot, and terminates the application gracefully.
+     *
+     * @param status Status code
+     */
+    public void exit(int status) {
+        // Log out bot
+        client.logout().block();
+
+        // Close Spring application context
+        SpringApplication.exit(ctx, () -> status);
+
+        // Exit
+        Logger.info("exiting");
+        System.exit(status);
     }
 
     /**
@@ -159,8 +161,8 @@ public class Ghost2Application implements ApplicationRunner {
         operatorId = config.operatorId();
     }
 
-    public DiscordClient getClient() {
-        return client;
+    public CommandDispatcher getDispatcher() {
+        return dispatcher;
     }
 
     public long getOperatorId() {

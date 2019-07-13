@@ -1,3 +1,6 @@
+/**
+ * Commands used to remotely manage the bot application.
+ */
 @CommandPackage(CommandType.OPERATOR)
 package com.github.coleb1911.ghost2.commands.modules.operator;
 

@@ -5,6 +5,7 @@ import com.github.coleb1911.ghost2.GhostConfig;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.pmw.tinylog.Logger;
 
@@ -35,6 +36,7 @@ public class ModuleClaimOperator extends Module {
         }
     }
 
+    @ReflectiveAccess
     public ModuleClaimOperator() {
         super(new ModuleInfo.Builder(ModuleClaimOperator.class)
                 .withName("claimoperator")
@@ -45,7 +47,6 @@ public class ModuleClaimOperator extends Module {
     public void invoke(CommandContext ctx) {
         // Generate key & fetch app instance
         String key = generateRandomString();
-        Ghost2Application app = Ghost2Application.getApplicationInstance();
 
         // Log key and prompt user for it
         ctx.replyBlocking(REPLY_PROMPT);
@@ -53,16 +54,16 @@ public class ModuleClaimOperator extends Module {
 
         // Listen for & validate key
         // If valid, the new operator's ID gets saved to ghost.properties and the config values are updated
-        app.getClient().getEventDispatcher().on(MessageCreateEvent.class)
+        ctx.getClient().getEventDispatcher().on(MessageCreateEvent.class)
                 .filter(event -> event.getMember().isPresent())
-                .filter(event -> event.getMember().get().getId().equals(ctx.getInvoker().getId()))
-                .filter(event -> event.getMessage().getChannelId().equals(ctx.getChannel().getId()))
+                .filter(event -> ctx.getInvoker().getId().equals(event.getMember().orElseThrow().getId()))
+                .filter(event -> ctx.getChannel().getId().equals(event.getMessage().getChannelId()))
                 .take(1)
                 .doOnNext(event -> {
                     if (event.getMessage().getContent().orElse("").equals(key)) {
                         ctx.reply(REPLY_VALID);
                         GhostConfig cfg = Ghost2Application.getApplicationInstance().getConfig();
-                        cfg.setProperty("ghost.operatorid", event.getMember().get().getId().asString());
+                        cfg.setProperty("ghost.operatorid", event.getMember().orElseThrow().getId().asString());
                         URI cfgUri;
                         try {
                             cfgUri = Objects.requireNonNull(Ghost2Application.getApplicationInstance().getClass().getClassLoader().getResource("ghost.properties")).toURI();
@@ -77,7 +78,9 @@ public class ModuleClaimOperator extends Module {
                 })
                 .timeout(Duration.of(30L, ChronoUnit.SECONDS), s -> ctx.reply(REPLY_TIMEOUT))
                 .blockFirst();
-        app.reloadConfig();
+
+        // Reload configuration
+        Ghost2Application.getApplicationInstance().reloadConfig();
     }
 
     private String generateRandomString() {
