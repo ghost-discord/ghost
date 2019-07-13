@@ -2,6 +2,7 @@
 **/*.db
 **/ghost.properties
 **/log/*.txt
+jre
 
 ### Gradle template
 .gradle
