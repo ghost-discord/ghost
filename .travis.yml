@@ -3,7 +3,7 @@ jdk: openjdk10
 install: true
 
 script:
-  - gradle build --scan -s
+  - ./gradlew build --scan -s
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
