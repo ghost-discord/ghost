@@ -10,4 +10,4 @@ All the available documentation can be found in the [project wiki](https://githu
   - To run the bot, [download a release](https://github.com/cbryant02/ghost2/releases) and refer to [*Configuring and running*](https://github.com/cbryant02/ghost2/wiki/Configuring-and-running).
 
 ## Contributing
-Pull requests are totally welcome; ghost2 is passionately maintained entirely by me and one friend in our free time. If you want to help us out, see the [contributor's guide](https://github.com/cbryant02/ghost2/wiki/Contributor's-guide) for more information on getting your code into the project.
+Pull requests are totally welcome; ghost2 is passionately maintained entirely by me and one friend in our free time. If you want to help us out, see [CONTRIBUTING.md](https://github.com/cbryant02/ghost2/blob/master/CONTRIBUTING.md) and read the full [contributor's guide](https://github.com/cbryant02/ghost2/wiki/Contributor's-guide) for more information on getting your code into the project.
