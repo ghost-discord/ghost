@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'java-library'
     id 'application'
+    id 'com.gradle.build-scan' version '2.3'
     id 'org.springframework.boot' version '2.1.6.RELEASE'
 }
 
@@ -64,4 +65,9 @@ javadoc {
         options.addStringOption('-module-path', classpath.asPath)
         options.addBooleanOption('html5', true)
     }
+}
+
+buildScan {
+	termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }
