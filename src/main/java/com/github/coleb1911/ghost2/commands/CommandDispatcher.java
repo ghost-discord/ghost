@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 @Configurable
 public class CommandDispatcher {
     @Autowired private GuildMetaRepository guildRepo;
-    private final CommandRegistry registry;
+    @Autowired private CommandRegistry registry;
     private final ExecutorService commandExecutor;
 
     /**
@@ -35,7 +35,6 @@ public class CommandDispatcher {
     @ReflectiveAccess
     public CommandDispatcher() {
         // Initialize command registry and thread pool
-        registry = new CommandRegistry();
         commandExecutor = Executors.newCachedThreadPool();
     }
 
@@ -104,7 +103,7 @@ public class CommandDispatcher {
             return;
         }
         for (Permission required : module.getInfo().getBotPermissions()) {
-            if (!invokerPerms.contains(required)) {
+            if (!botPerms.contains(required)) {
                 ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_BOT);
                 return;
             }

@@ -43,7 +43,7 @@ public abstract class Module {
     /**
      * Invokes the command.
      *
-     * @param ctx Command context. Must be not-null.
+     * @param ctx Command context. <b>Cannot be null.</b>
      */
     public abstract void invoke(@NotNull CommandContext ctx);
 

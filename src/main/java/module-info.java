@@ -5,6 +5,7 @@ open module ghost2.main {
     requires spring.boot.autoconfigure;
     requires spring.beans;
     requires spring.data.commons;
+    requires spring.data.jpa;
     requires spring.context;
     requires org.apache.commons.lang3;
     requires discord4j.core;

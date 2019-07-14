@@ -101,25 +101,19 @@ public class ModuleInfo {
      * {@link Builder#withName withName}, and {@link Builder#withDescription withDescription}.
      */
     public static class Builder {
-        @NotNull private Class<? extends Module> moduleClass;
-        @NotBlank
-        private String name;
-        @NotBlank
-        private String description;
-        @NotNull
-        private PermissionSet botPermissions;
-        @NotNull
-        private PermissionSet userPermissions;
-        @NotNull
-        private CommandType type;
-        @NotNull
-        private String[] aliases;
+        @NotNull private final Class<? extends Module> moduleClass;
+        @NotNull private final CommandType type;
+        @NotBlank private String name;
+        @NotBlank private String description;
+        @NotNull private PermissionSet botPermissions;
+        @NotNull private PermissionSet userPermissions;
+        @NotNull private String[] aliases;
 
         /**
          * Constructs a new CommandInfo builder.<br>
          * This builder should only be utilized by a {@link Module} to provide its own metadata.
          *
-         * @param moduleClass Actual class of the Module calling the constructor. <b>Must be not-null.</b> Used to get
+         * @param moduleClass Actual class of the Module calling the constructor. <b>Cannot be null.</b> Used to get
          *                    {@link CommandType} from the Module's package.
          */
         public Builder(@NotNull Class<? extends Module> moduleClass) {
@@ -168,7 +162,7 @@ public class ModuleInfo {
         /**
          * Sets the required user permissions to the given PermissionSet.
          *
-         * @param userPermissions Required user permissions. Must be not-null.
+         * @param userPermissions Required user permissions. <b>Cannot be null.</b>
          * @return this Builder
          */
         public Builder withUserPermissions(@NotNull PermissionSet userPermissions) {
@@ -177,9 +171,21 @@ public class ModuleInfo {
         }
 
         /**
+         * Sets the required user and bot permissions to the given PermissionSet.
+         *
+         * @param permissions Required permissions. <b>Cannot be null.</b>
+         * @return this Builder
+         */
+        public Builder withPermissions(@NotNull PermissionSet permissions) {
+            this.botPermissions = permissions;
+            this.userPermissions = permissions;
+            return this;
+        }
+
+        /**
          * Sets the command aliases to the given values.
          *
-         * @param aliases Command aliases. Must be not-null.
+         * @param aliases Command aliases. <b>Cannot be null.</b>
          * @return this Builder
          */
         public Builder withAliases(@NotNull String... aliases) {

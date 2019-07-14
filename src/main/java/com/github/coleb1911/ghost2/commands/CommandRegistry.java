@@ -3,8 +3,15 @@ package com.github.coleb1911.ghost2.commands;
 import com.github.coleb1911.ghost2.commands.meta.InvalidModuleException;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import org.reflections.Reflections;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -21,12 +28,15 @@ import java.util.Set;
  * <li>Gets the {@link ModuleInfo} associated with a Module by name</li>
  * </ol>
  */
-public class CommandRegistry {
+@Component
+@Configurable
+public class CommandRegistry implements ApplicationListener<ContextRefreshedEvent> {
     private static final String MODULE_PACKAGE = "com.github.coleb1911.ghost2.commands.modules";
-    private static final String INSTANTIATION_ERROR_FORMAT = "Cannot construct an instance of %s; Module implementations must have a public constructor to function";
 
     private final List<Module> instantiated;
+    private AutowireCapableBeanFactory factory;
 
+    @ReflectiveAccess
     CommandRegistry() {
         // Create instantiated object "cache"
         instantiated = new LinkedList<>();
@@ -37,13 +47,7 @@ public class CommandRegistry {
 
         // Construct an instance of each Module
         for (Class<? extends Module> module : modules) {
-            try {
-                instantiated.add(module.getDeclaredConstructor().newInstance());
-            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-                throw new InvalidModuleException(module, InvalidModuleException.Reason.NOT_INSTANTIABLE);
-            } catch (InvocationTargetException e) {
-                throw new InvalidModuleException(module, e.getTargetException());
-            }
+            instantiated.add(createInstance(module));
         }
     }
 
@@ -59,11 +63,7 @@ public class CommandRegistry {
         for (Module module : instantiated) {
             if (name.equals(module.getInfo().getName())) {
                 instantiated.remove(module);
-                try {
-                    instantiated.add(module.getClass().getDeclaredConstructor().newInstance());
-                } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException(String.format(INSTANTIATION_ERROR_FORMAT, instantiated.getClass().getName()));
-                }
+                instantiated.add(createInstance(module.getClass()));
                 return module;
             }
         }
@@ -97,5 +97,33 @@ public class CommandRegistry {
             ret.add(module.getInfo());
         }
         return ret;
+    }
+
+    /**
+     * Creates an instance of a Module class.
+     *
+     * @param moduleClass Desired Module class. <b>Cannot be null.</b>
+     * @return New instance of the class, or null if invalid
+     * @throws InvalidModuleException if the module is written incorrectly
+     * @see InvalidModuleException.Reason
+     */
+    private Module createInstance(@NotNull Class<? extends Module> moduleClass) {
+        Module ret;
+        try {
+            ret = moduleClass.getDeclaredConstructor().newInstance();
+            if (factory != null) factory.autowireBean(ret);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new InvalidModuleException(moduleClass, InvalidModuleException.Reason.NOT_INSTANTIABLE);
+        } catch (InvocationTargetException e) {
+            throw new InvalidModuleException(moduleClass, e.getTargetException());
+        }
+        return ret;
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        this.factory = event.getApplicationContext().getAutowireCapableBeanFactory();
+        for (Module module : instantiated)
+            factory.autowireBean(module);
     }
 }

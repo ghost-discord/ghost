@@ -6,6 +6,7 @@ import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.util.Snowflake;
 
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 public final class ModuleInvite extends Module {
@@ -17,7 +18,7 @@ public final class ModuleInvite extends Module {
     }
 
     @Override
-    public void invoke(CommandContext ctx) {
+    public void invoke(@NotNull CommandContext ctx) {
         Snowflake clientId = Objects.requireNonNull(ctx.getClient().getApplicationInfo().block()).getId();
         ctx.reply(String.format("https://discordapp.com/oauth2/authorize?client_id=%d&scope=bot&permissions=3214336", clientId.asLong()));
     }

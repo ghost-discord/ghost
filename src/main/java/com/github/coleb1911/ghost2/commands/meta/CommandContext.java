@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Contains relevant information for when a command is invoked.
@@ -22,7 +21,8 @@ public class CommandContext {
     private final List<String> args;
     private final String trigger;
     private final DiscordClient client;
-    private final List<User> mentions;
+    private final List<User> userMentions;
+    private final List<Role> roleMentions;
 
     public CommandContext(MessageCreateEvent event) {
         this.guild = Objects.requireNonNull(event.getGuild().block());
@@ -33,7 +33,8 @@ public class CommandContext {
         this.args = extractArgs(message);
         this.trigger = args.remove(0);
         this.client = event.getClient();
-        this.mentions = event.getMessage().getUserMentions().collect(Collectors.toList()).block();
+        this.userMentions = event.getMessage().getUserMentions().collectList().block();
+        this.roleMentions = event.getMessage().getRoleMentions().collectList().block();
     }
 
     public Guild getGuild() {
@@ -68,20 +69,24 @@ public class CommandContext {
         return client;
     }
 
-    public List<User> getMentions() {
-        return mentions;
+    public List<User> getUserMentions() {
+        return userMentions;
+    }
+
+    public List<Role> getRoleMentions() {
+        return roleMentions;
     }
 
     public void reply(String message) {
         channel.createMessage(message).subscribe();
     }
 
-    public void replyBlocking(String message) {
-        channel.createMessage(message).block();
+    public void replyDirect(String message) {
+        invoker.getPrivateChannel().map(ch -> ch.createMessage(message).subscribe()).subscribe();
     }
 
     private List<String> extractArgs(Message message) {
-        String content = message.getContent().orElse("");
+        String content = message.getContent().orElse("").toLowerCase();
         // Arrays.asList returns an immutable list implementation, so we need to wrap it in an actual ArrayList
         return new ArrayList<>(Arrays.asList(content.split("\\p{javaSpaceChar}")));
     }

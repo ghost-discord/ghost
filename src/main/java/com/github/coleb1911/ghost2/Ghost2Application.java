@@ -7,6 +7,7 @@ import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
+import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
@@ -24,8 +25,9 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -42,6 +44,7 @@ import java.util.function.Predicate;
 @ComponentScan
 @SpringBootApplication
 @EnableAutoConfiguration
+@EnableJpaRepositories("com.github.coleb1911.ghost2.database.repos")
 public class Ghost2Application implements ApplicationRunner {
     private static final String MESSAGE_SET_OPERATOR = "No operator has been set for this bot instance. Use the \'claimoperator\' command to set one; until then, operator commands won't work.";
     private static final String CONNECTION_ERROR = "General connection error. Check your internet connection and try again.";
@@ -49,7 +52,7 @@ public class Ghost2Application implements ApplicationRunner {
 
     private static Ghost2Application applicationInstance;
 
-    @Autowired private ConfigurableApplicationContext ctx;
+    @Autowired private ApplicationContext ctx;
     @Autowired private CommandDispatcher dispatcher;
     @Autowired private GuildMetaRepository guildRepo;
     private DiscordClient client;
@@ -62,6 +65,9 @@ public class Ghost2Application implements ApplicationRunner {
         SpringApplication.run(Ghost2Application.class, args);
     }
 
+    /**
+     * @return Main application class instance
+     */
     public static Ghost2Application getApplicationInstance() {
         return applicationInstance;
     }
@@ -75,7 +81,10 @@ public class Ghost2Application implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         // Try to acquire a lock to ensure only one application instance is running
-        this.lock();
+        if (!this.lock()) {
+            Logger.error("Only one instance of ghost2 may run at a time. Close any other instances and try again.");
+            exit(1);
+        }
 
         // Set instance
         applicationInstance = this;
@@ -240,6 +249,14 @@ public class Ghost2Application implements ApplicationRunner {
                 .filter(guildRepo::existsById)
                 .doOnEach(signal -> Logger.debug("Removed guild {} from database", signal.get()))
                 .subscribe(guildRepo::deleteById);
+
+        // Autorole
+        client.getEventDispatcher().on(MemberJoinEvent.class)
+                .subscribe(e -> {
+                    GuildMeta meta = guildRepo.findById(e.getGuildId().asLong()).orElseThrow();
+                    if (meta.getAutoRoleEnabled() && !meta.getAutoRoleConfirmationEnabled())
+                        e.getMember().addRole(Snowflake.of(meta.getAutoRoleId()));
+                });
 
         // Send MessageCreateEvents to CommandDispatcher
         client.getEventDispatcher().on(MessageCreateEvent.class)

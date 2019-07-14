@@ -46,7 +46,7 @@ public class InvalidModuleException extends RuntimeException {
      */
     public enum Reason {
         EXCEPTION_IN_CONSTRUCTOR("Module threw an exception in its constructor. "),
-        NOT_INSTANTIABLE("Module is missing a public constructor or is non-instantiable"),
+        NOT_INSTANTIABLE("Module is missing a public constructor or is a non-instantiable type"),
         INVALID_NAME("Module has a null, empty, or all-whitespace name"),
         INVALID_DESCRIPTION("Module has a null, empty, or all-whitespace description"),
         INVALID_BOT_PERMISSIONS("Module has a null bot permission list"),

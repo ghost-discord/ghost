@@ -18,16 +18,13 @@ repositories {
 }
 
 dependencies {
-    // Spring
+    // Spring and Hibernate
     // Logback is excluded in order to avoid conflict with TinyLog
     implementation(group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.6.RELEASE') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
     implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.1.9.RELEASE'
-
-    // Hibernate
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
-    implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.4.3.Final'
 
     // Other libraries & APIs
     implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.0.7'

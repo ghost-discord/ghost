@@ -4,9 +4,8 @@ import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.commands.CommandRegistry;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.*;
-import discord4j.core.DiscordClient;
-import discord4j.core.object.entity.User;
 
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.*;
 
@@ -23,9 +22,7 @@ public final class ModuleHelp extends Module {
     }
 
     @Override
-    public void invoke(CommandContext ctx) {
-        DiscordClient client = ctx.getClient();
-        User self = Objects.requireNonNull(client.getSelf().block());
+    public void invoke(@NotNull CommandContext ctx) {
         CommandRegistry registry = Ghost2Application.getApplicationInstance().getDispatcher().getRegistry();
 
         // Single-command help
@@ -56,8 +53,7 @@ public final class ModuleHelp extends Module {
                 embedSpec.addField("Aliases", aliasList, false);
                 embedSpec.addField("Category", info.getType().getIcon() + info.getType().getFormattedName(), false);
             })).block();
-            // Full command list
-        } else {
+        } else { // Full command list
             // Categorize all available modules
             Map<CommandType, List<ModuleInfo>> modules = new LinkedHashMap<>();
 
@@ -72,7 +68,7 @@ public final class ModuleHelp extends Module {
             // Build and send embed
             ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
                 embedSpec.setTitle("Help");
-                embedSpec.setAuthor(self.getUsername(), null, self.getAvatarUrl());
+                embedSpec.setAuthor(ctx.getSelf().getUsername(), null, ctx.getSelf().getAvatarUrl());
                 embedSpec.setFooter("See g!help <command> for help with specific commands", null);
                 embedSpec.setTimestamp(Instant.now());
 

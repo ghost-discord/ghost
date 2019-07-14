@@ -9,6 +9,7 @@ import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.pmw.tinylog.Logger;
 
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public final class ModuleClaimOperator extends Module {
     private static final String REPLY_VALID = "Key valid. Hello, guardian.";
     private static final String REPLY_TIMEOUT = "Operator claim timed out.";
 
-    private static Random rng;
+    @SuppressWarnings("CanBeFinal") private static Random rng;
 
     static {
         try {
@@ -44,12 +45,12 @@ public final class ModuleClaimOperator extends Module {
     }
 
     @Override
-    public void invoke(CommandContext ctx) {
+    public void invoke(@NotNull CommandContext ctx) {
         // Generate key & fetch app instance
         String key = generateRandomString();
 
         // Log key and prompt user for it
-        ctx.replyBlocking(REPLY_PROMPT);
+        ctx.reply(REPLY_PROMPT);
         Logger.info("Your key: " + key);
 
         // Listen for & validate key
