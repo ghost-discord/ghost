@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Random;
 
-public class ModuleClaimOperator extends Module {
+public final class ModuleClaimOperator extends Module {
     private static final String REPLY_PROMPT = "A key has been generated and logged to the console. Paste it in chat to claim operator. (30s timeout)";
     private static final String REPLY_VALID = "Key valid. Hello, guardian.";
     private static final String REPLY_TIMEOUT = "Operator claim timed out.";

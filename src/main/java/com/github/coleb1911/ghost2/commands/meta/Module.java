@@ -4,7 +4,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * A single command module.
- * <p/>
+ * <p>
  * To implement a command, simply extend {@code Module} and provide at least the following:
  * <ul>
  * <li>A {@code public} constructor</li>

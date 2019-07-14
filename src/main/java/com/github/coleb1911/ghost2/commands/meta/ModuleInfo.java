@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Contains metadata for a Module.
- * <p/>
+ * <p>
  * The metadata includes all of the following:
  * <ul>
  * <li>Command name</li>
@@ -82,7 +82,7 @@ public class ModuleInfo {
 
     /**
      * The builder class for ModuleInfo.
-     * <p/>
+     * <p>
      * Every {@link Module} subclass must construct themselves with a valid ModuleInfo in order to be considered a valid command.
      * The minimum criteria for a valid ModuleInfo.Builder are as follows:
      * <ul>
@@ -90,14 +90,12 @@ public class ModuleInfo {
      * <li>{@code description} is not null and contains at least one non-whitespace character.</li>
      * <li>
      * {@link CommandType type} is not null. Since ModuleInfo.Builder obtains the command type
-     * reflectively via the {@link CommandPackage @CommandPackage} annotation, this means two things:
-     * <br/>
-     * 1. The Module must be located in a sub-package of {@link com.github.coleb1911.ghost2.commands.modules modules}
-     * <br/>
+     * reflectively via the {@link CommandPackage @CommandPackage} annotation, this means two things:<br>
+     * 1. The Module must be located in a sub-package of {@link com.github.coleb1911.ghost2.commands.modules modules}<br>
      * 2. The Module must pass a valid class (i.e. itself) to the ModuleInfo.Builder constructor.
      * </li>
      * </ul>
-     * <p/>
+     * <p>
      * The other fields are set to an empty value automatically by the Builder constructor and do not have to be
      * provided by the Module. In essence, you only need to call the {@linkplain Builder#Builder constructor},
      * {@link Builder#withName withName}, and {@link Builder#withDescription withDescription}.
@@ -118,18 +116,13 @@ public class ModuleInfo {
         private String[] aliases;
 
         /**
-         * Constructs a new CommandInfo builder.
-         * <br/>
+         * Constructs a new CommandInfo builder.<br>
          * This builder should only be utilized by a {@link Module} to provide its own metadata.
          *
          * @param moduleClass Actual class of the Module calling the constructor. <b>Must be not-null.</b> Used to get
          *                    {@link CommandType} from the Module's package.
          */
         public Builder(@NotNull Class<? extends Module> moduleClass) {
-            if (null == moduleClass) {
-                throw new NullPointerException("Class passed to ModuleInfo.Builder cannot be null");
-            }
-
             this.moduleClass = moduleClass;
             this.name = "";
             this.description = "";
@@ -226,7 +219,7 @@ public class ModuleInfo {
             if (null == aliases) reasons.add(InvalidModuleException.Reason.INVALID_ALIASES);
 
             // Throw if any invalid fields encountered
-            if (reasons.size() > 0) {
+            if (!reasons.isEmpty()) {
                 throw new InvalidModuleException(moduleClass, reasons.toArray(new InvalidModuleException.Reason[0]));
             }
         }

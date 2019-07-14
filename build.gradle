@@ -56,3 +56,12 @@ compileJava {
         classpath = files()
     }
 }
+
+javadoc {
+    inputs.property("moduleName", "ghost2.main")
+    source = sourceSets.main.allJava
+    doFirst {
+        options.addStringOption('-module-path', classpath.asPath)
+        options.addBooleanOption('html5', true)
+    }
+}

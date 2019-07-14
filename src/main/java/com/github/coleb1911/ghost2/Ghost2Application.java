@@ -6,6 +6,8 @@ import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
+import discord4j.core.event.domain.guild.GuildDeleteEvent;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
@@ -26,8 +28,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileLock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -42,17 +48,18 @@ public class Ghost2Application implements ApplicationRunner {
     private static final String CONFIG_ERROR = "ghost.properties is missing or does not contain a bot token. Read ghost2's README for info on how to set up the bot.";
 
     private static Ghost2Application applicationInstance;
-    private static ConfigurableApplicationContext ctx;
+
+    @Autowired private ConfigurableApplicationContext ctx;
+    @Autowired private CommandDispatcher dispatcher;
+    @Autowired private GuildMetaRepository guildRepo;
     private DiscordClient client;
-    private long operatorId;
     private GhostConfig config;
-    @Autowired
-    private CommandDispatcher dispatcher;
-    @Autowired
-    private GuildMetaRepository guildRepo;
+    private RandomAccessFile lockFile;
+    private FileLock lock;
+    private long operatorId;
 
     public static void main(String[] args) {
-        ctx = SpringApplication.run(Ghost2Application.class, args);
+        SpringApplication.run(Ghost2Application.class, args);
     }
 
     public static Ghost2Application getApplicationInstance() {
@@ -60,14 +67,16 @@ public class Ghost2Application implements ApplicationRunner {
     }
 
     /**
-     * Starts the application.
-     * <br/>
+     * Starts the application.<br>
      * This should only be called by Spring Boot.
      *
      * @param args Arguments passed to the application
      */
     @Override
     public void run(ApplicationArguments args) {
+        // Try to acquire a lock to ensure only one application instance is running
+        this.lock();
+
         // Set instance
         applicationInstance = this;
 
@@ -93,24 +102,8 @@ public class Ghost2Application implements ApplicationRunner {
                 .setInitialPresence(Presence.online(Activity.listening("your commands.")))
                 .build();
 
-        // Send MessageCreateEvents to CommandDispatcher
-        client.getEventDispatcher().on(MessageCreateEvent.class)
-                .filter(e -> {
-                    if (e.getMember().isPresent()) {
-                        return !e.getMember().get().isBot();
-                    }
-                    return false;
-                })
-                .subscribe(dispatcher::onMessageEvent);
-
-        // Add any new guilds to database
-        client.getEventDispatcher().on(GuildCreateEvent.class)
-                .map(GuildCreateEvent::getGuild)
-                .map(Guild::getId)
-                .map(Snowflake::asLong)
-                .filter(((Predicate<Long>) guildRepo::existsById).negate())
-                .map(id -> new GuildMeta(id, GuildMeta.DEFAULT_PREFIX))
-                .subscribe(guildRepo::save);
+        // Register event listeners
+        this.registerListeners(client);
 
         // Get current bot operator, log notice if null
         operatorId = config.operatorId();
@@ -138,17 +131,16 @@ public class Ghost2Application implements ApplicationRunner {
         // Log out bot
         client.logout().block();
 
+        // Release application lock
+        this.unlock();
+
         // Close Spring application context
         SpringApplication.exit(ctx, () -> status);
-
-        // Exit
-        Logger.info("exiting");
-        System.exit(status);
+        Logger.info("Exiting.");
     }
 
     /**
-     * Reloads the application config & all related values.
-     * <br/>
+     * Reloads the application config &amp; all related values.<br>
      * Note: The application will exit if a token change occurred. Don't change it at runtime.
      */
     public void reloadConfig() {
@@ -161,15 +153,102 @@ public class Ghost2Application implements ApplicationRunner {
         operatorId = config.operatorId();
     }
 
+    /**
+     * @return The {@code CommandDispatcher} for this instance
+     */
     public CommandDispatcher getDispatcher() {
         return dispatcher;
     }
 
+    /**
+     * @return The user ID of the bot's current operator
+     */
     public long getOperatorId() {
         return operatorId;
     }
 
+    /**
+     * @return The currently loaded application config
+     */
     public GhostConfig getConfig() {
         return config;
+    }
+
+    /**
+     * Tries to acquire a lock on ghost2.lock
+     *
+     * @return True if lock was successfully acquired
+     */
+    private boolean lock() {
+        try {
+            String tempDir = System.getProperty("java.io.tmpdir");
+            lockFile = new RandomAccessFile(tempDir + "ghost2.lock", "rw");
+            lock = lockFile.getChannel().tryLock();
+            return lock != null;
+        } catch (IOException e) {
+            Logger.error("Failed to acquire lock on ghost2.lock", e);
+            return false;
+        }
+    }
+
+    /**
+     * Releases the lock on ghost2.lock
+     */
+    private void unlock() {
+        try {
+            lock.release();
+            lockFile.close();
+        } catch (IOException e) {
+            Logger.error("Failed to release lock on ghost2.lock", e);
+        }
+    }
+
+    /**
+     * Registers all the event listeners ghost2 needs
+     *
+     * @param client Client object to register listeners on
+     */
+    private void registerListeners(DiscordClient client) {
+        // Drop guilds we were removed from when offline (if any)
+        client.getEventDispatcher().on(ReadyEvent.class)
+                .subscribe(ignore ->
+                        client.getGuilds()
+                                .map(Guild::getId)
+                                .map(Snowflake::asLong)
+                                .filter(((Predicate<Long>) guildRepo::existsById).negate())
+                                .subscribe(guildRepo::deleteById)
+                );
+
+        // Add new guilds to database as they're received
+        client.getEventDispatcher().on(GuildCreateEvent.class)
+                .map(GuildCreateEvent::getGuild)
+                .map(Guild::getId)
+                .map(Snowflake::asLong)
+                .filter(((Predicate<Long>) guildRepo::existsById).negate())
+                .map(id -> new GuildMeta(id, GuildMeta.DEFAULT_PREFIX))
+                .doOnEach(signal -> Logger.debug("Added new guild {} to database", Objects.requireNonNull(signal.get()).getId()))
+                .subscribe(guildRepo::save);
+
+        // Drop guilds when we're removed from them
+        client.getEventDispatcher().on(GuildDeleteEvent.class)
+                .filter(e -> !e.isUnavailable())
+                .map(GuildDeleteEvent::getGuild)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(Guild::getId)
+                .map(Snowflake::asLong)
+                .filter(guildRepo::existsById)
+                .doOnEach(signal -> Logger.debug("Removed guild {} from database", signal.get()))
+                .subscribe(guildRepo::deleteById);
+
+        // Send MessageCreateEvents to CommandDispatcher
+        client.getEventDispatcher().on(MessageCreateEvent.class)
+                .filter(e -> {
+                    if (e.getMember().isPresent()) {
+                        return !e.getMember().get().isBot();
+                    }
+                    return false;
+                })
+                .subscribe(dispatcher::onMessageEvent);
     }
 }

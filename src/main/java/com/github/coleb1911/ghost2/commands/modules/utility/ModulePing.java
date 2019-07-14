@@ -5,7 +5,7 @@ import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
-public class ModulePing extends Module {
+public final class ModulePing extends Module {
     @ReflectiveAccess
     public ModulePing() {
         super(new ModuleInfo.Builder(ModulePing.class)

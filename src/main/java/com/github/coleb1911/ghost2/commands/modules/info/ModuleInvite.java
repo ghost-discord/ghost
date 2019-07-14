@@ -8,7 +8,7 @@ import discord4j.core.object.util.Snowflake;
 
 import java.util.Objects;
 
-public class ModuleInvite extends Module {
+public final class ModuleInvite extends Module {
     @ReflectiveAccess
     public ModuleInvite() {
         super(new ModuleInfo.Builder(ModuleInvite.class)
@@ -19,6 +19,6 @@ public class ModuleInvite extends Module {
     @Override
     public void invoke(CommandContext ctx) {
         Snowflake clientId = Objects.requireNonNull(ctx.getClient().getApplicationInfo().block()).getId();
-        ctx.reply(String.format("https://discordapp.com/oauth2/authorize?client_id=%d&scope=bot&permissions=3474432", clientId.asLong()));
+        ctx.reply(String.format("https://discordapp.com/oauth2/authorize?client_id=%d&scope=bot&permissions=3214336", clientId.asLong()));
     }
 }

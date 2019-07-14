@@ -13,8 +13,8 @@ import java.util.Set;
 
 /**
  * Scans the {@link com.github.coleb1911.ghost2.commands commands} package for valid command {@link Module}s
- * & maintains a {@link List} of instances of each Module.
- * <p/>
+ * &amp; maintains a {@link List} of instances of each Module.
+ * <p>
  * This class serves two main purposes:
  * <ol>
  * <li>Gets an instance of a Module by name</li>
@@ -27,7 +27,7 @@ public class CommandRegistry {
 
     private final List<Module> instantiated;
 
-    public CommandRegistry() {
+    CommandRegistry() {
         // Create instantiated object "cache"
         instantiated = new LinkedList<>();
 

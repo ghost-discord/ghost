@@ -25,10 +25,9 @@ import java.util.concurrent.Executors;
 @Component
 @Configurable
 public class CommandDispatcher {
+    @Autowired private GuildMetaRepository guildRepo;
     private final CommandRegistry registry;
     private final ExecutorService commandExecutor;
-    @Autowired
-    private GuildMetaRepository guildRepo;
 
     /**
      * Construct a new CommandDispatcher.
@@ -42,7 +41,7 @@ public class CommandDispatcher {
 
     /**
      * Processes {@link MessageCreateEvent}s and {@link Module#invoke invoke}s commands.
-     * <p/>
+     * <p>
      * Should <b>NOT</b> be called by anything other than {@link Ghost2Application}.
      *
      * @param ev Event to process
@@ -52,8 +51,8 @@ public class CommandDispatcher {
         final CommandContext ctx = new CommandContext(ev);
 
         // Fetch prefix from database
-        // GuildMeta shouldn't be null, otherwise we wouldn't have received the event;
-        //   we still null-check to be safe and get rid of the warning
+        // GuildMeta shouldn't be null, otherwise we wouldn't have received the event.
+        // We still null-check to be safe and get rid of the warning.
         GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElse(null);
         if (null == meta) {
             return;
@@ -90,11 +89,12 @@ public class CommandDispatcher {
 
         // Check user's ID if command is an operator command
         // An exception is made for ModuleClaimOperator
-        if (!(module instanceof ModuleClaimOperator)) {
-            if ((module.getInfo().getType() == CommandType.OPERATOR) && (ctx.getInvoker().getId().asLong() != Ghost2Application.getApplicationInstance().getOperatorId())) {
-                ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
-                return;
-            }
+        if (!(module instanceof ModuleClaimOperator) &&
+                (module.getInfo().getType() == CommandType.OPERATOR) &&
+                (ctx.getInvoker().getId().asLong() != Ghost2Application.getApplicationInstance().getOperatorId())) {
+
+            ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
+            return;
         }
 
         // Check bot's permissions
