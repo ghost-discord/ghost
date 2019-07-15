@@ -25,9 +25,9 @@ import java.util.concurrent.Executors;
 @Component
 @Configurable
 public class CommandDispatcher {
+    private final ExecutorService commandExecutor;
     @Autowired private GuildMetaRepository guildRepo;
     @Autowired private CommandRegistry registry;
-    private final ExecutorService commandExecutor;
 
     /**
      * Construct a new CommandDispatcher.

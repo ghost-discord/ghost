@@ -9,10 +9,6 @@ import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.*;
 
-// TODO: Add a text-only help list if the bot is unable to send embeds
-// Apparently there's a way to disable embeds through permissions, but I can't find the related permission.
-// I'd like to just get all of this new code pushed out instead of wasting my time digging around in
-// Discord's awful API documentation for 2 hours just to fix one module.
 public final class ModuleHelp extends Module {
     @ReflectiveAccess
     public ModuleHelp() {
