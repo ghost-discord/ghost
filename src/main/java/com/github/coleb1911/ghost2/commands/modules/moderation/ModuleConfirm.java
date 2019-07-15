@@ -42,7 +42,7 @@ public final class ModuleConfirm extends Module {
             }
 
             if (!ctx.getInvoker().getRoleIds().contains(role.getId())) {
-                ctx.getInvoker().addRole(role.getId()).subscribe();
+                ctx.getInvoker().addRole(role.getId(), "Autorole").subscribe();
                 ctx.replyDirect("You have received your role.");
             } else {
                 ctx.replyDirect("You already have " + ctx.getGuild().getName() + "'s base role.");

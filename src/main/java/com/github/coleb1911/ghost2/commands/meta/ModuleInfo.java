@@ -5,8 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Contains metadata for a Module.
@@ -122,8 +122,12 @@ public class ModuleInfo {
             this.description = "";
             this.botPermissions = PermissionSet.none();
             this.userPermissions = PermissionSet.none();
-            this.type = moduleClass.getPackage().getAnnotation(CommandPackage.class).value();
             this.aliases = new String[0];
+
+            CommandPackage packageAnnotation = moduleClass.getPackage().getAnnotation(CommandPackage.class);
+            if (packageAnnotation == null)
+                throw new IllegalArgumentException("Module class passed to #ModuleInfo.Builder() was incorrect or class is not in a valid package");
+            this.type = packageAnnotation.value();
         }
 
         /**
@@ -209,7 +213,7 @@ public class ModuleInfo {
          * @throws InvalidModuleException upon encountering an incorrectly populated field
          */
         private void checkValid() throws InvalidModuleException {
-            List<InvalidModuleException.Reason> reasons = new ArrayList<>();
+            Set<InvalidModuleException.Reason> reasons = new LinkedHashSet<>();
 
             // Check all fields
             if (StringUtils.isBlank(name)) reasons.add(InvalidModuleException.Reason.INVALID_NAME);
@@ -226,7 +230,7 @@ public class ModuleInfo {
 
             // Throw if any invalid fields encountered
             if (!reasons.isEmpty()) {
-                throw new InvalidModuleException(moduleClass, reasons.toArray(new InvalidModuleException.Reason[0]));
+                throw new InvalidModuleException(moduleClass, reasons);
             }
         }
     }

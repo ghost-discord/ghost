@@ -254,8 +254,11 @@ public class Ghost2Application implements ApplicationRunner {
         client.getEventDispatcher().on(MemberJoinEvent.class)
                 .subscribe(e -> {
                     GuildMeta meta = guildRepo.findById(e.getGuildId().asLong()).orElseThrow();
-                    if (meta.getAutoRoleEnabled() && !meta.getAutoRoleConfirmationEnabled())
-                        e.getMember().addRole(Snowflake.of(meta.getAutoRoleId()));
+                    if (meta.getAutoRoleEnabled() && !meta.getAutoRoleConfirmationEnabled()) {
+                        e.getMember().addRole(Snowflake.of(meta.getAutoRoleId()), "Autorole").subscribe();
+                        String dm = String.format("Welcome to %s! You've been given your role automatically.", Objects.requireNonNull(e.getGuild().block()).getName());
+                        e.getMember().getPrivateChannel().subscribe(c -> c.createMessage(dm).subscribe());
+                    }
                 });
 
         // Send MessageCreateEvents to CommandDispatcher
