@@ -6,8 +6,10 @@ plugins {
     id 'org.springframework.boot' version '2.1.6.RELEASE'
 }
 
+apply plugin: 'io.spring.dependency-management'
+
 mainClassName = "com.github.coleb1911.ghost2.Ghost2Application"
-group 'com.github.cbryant02'
+group 'com.github.coleb1911'
 version '0.1'
 
 sourceCompatibility = JavaVersion.VERSION_1_10
@@ -20,10 +22,9 @@ repositories {
 dependencies {
     // Spring and Hibernate
     // Logback is excluded in order to avoid conflict with TinyLog
-    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.6.RELEASE') {
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.6.RELEASE') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
-    implementation group: 'org.springframework.data', name: 'spring-data-jpa', version: '2.1.9.RELEASE'
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
 
     // Other libraries & APIs
@@ -43,14 +44,11 @@ dependencies {
 
 test {
     useJUnitPlatform()
-
     systemProperty 'ghost2.version', project.version
-
-
 }
 
 bootJar {
-    exclude('ghost.properties')
+    exclude 'ghost.properties'
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
@@ -60,7 +58,7 @@ compileJava {
     inputs.property("moduleName", "ghost2.main")
     doFirst {
         options.compilerArgs = [
-                '--module-path', classpath.asPath
+            '--module-path', classpath.asPath
         ]
         classpath = files()
     }
