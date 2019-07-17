@@ -2,7 +2,9 @@
 **/*.db
 **/ghost.properties
 **/log/*.txt
-jre
+bt_output
+bt_temp
+xplatformjdk
 
 ### Gradle template
 .gradle

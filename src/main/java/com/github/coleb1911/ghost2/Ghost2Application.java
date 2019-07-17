@@ -46,6 +46,8 @@ import java.util.function.Predicate;
 @EnableAutoConfiguration
 @EnableJpaRepositories("com.github.coleb1911.ghost2.database.repos")
 public class Ghost2Application implements ApplicationRunner {
+    public static final String VERSION_STRING = "0.1";
+
     private static final String MESSAGE_SET_OPERATOR = "No operator has been set for this bot instance. Use the \'claimoperator\' command to set one; until then, operator commands won't work.";
     private static final String CONNECTION_ERROR = "General connection error. Check your internet connection and try again.";
     private static final String CONFIG_ERROR = "ghost.properties is missing or does not contain a bot token. Read ghost2's README for info on how to set up the bot.";

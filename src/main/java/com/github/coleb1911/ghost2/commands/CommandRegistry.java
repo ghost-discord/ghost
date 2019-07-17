@@ -15,7 +15,11 @@ import org.springframework.stereotype.Component;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Scans the {@link com.github.coleb1911.ghost2.commands commands} package for valid command {@link Module}s

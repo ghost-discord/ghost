@@ -1,19 +1,17 @@
 plugins {
     id 'java'
     id 'java-library'
-    id 'application'
     id 'com.gradle.build-scan' version '2.3'
     id 'org.springframework.boot' version '2.1.6.RELEASE'
 }
 
 apply plugin: 'io.spring.dependency-management'
 
-mainClassName = "com.github.coleb1911.ghost2.Ghost2Application"
 group 'com.github.coleb1911'
 version '0.1'
 
-sourceCompatibility = JavaVersion.VERSION_1_10
-targetCompatibility = JavaVersion.VERSION_1_10
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
@@ -40,6 +38,12 @@ dependencies {
 
     // JUnit
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.5.0'
+
+    // Apache utilities for build tools
+    // Excluded in final build
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.18'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 }
 
 test {
@@ -49,6 +53,11 @@ test {
 
 bootJar {
     exclude 'ghost.properties'
+    exclude '**/buildtools'
+    exclude '**/httpclient-*.jar'
+    exclude '**/httpcore-*.jar'
+    exclude '**/commons-compress-*.jar'
+    exclude '**/commons-io-*.jar'
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
@@ -76,4 +85,15 @@ javadoc {
 buildScan {
 	termsOfServiceUrl = 'https://gradle.com/terms-of-service'
     termsOfServiceAgree = 'yes'
+}
+
+task ghostPackage(type:JavaExec) {
+    dependsOn bootJar
+    main = "com.github.coleb1911.ghost2.buildtools.RuntimeBuilder"
+    classpath = sourceSets.main.runtimeClasspath
+    test.testLogging.showStandardStreams = true
+}
+
+clean {
+    delete "${rootDir}/bt_temp"
 }

@@ -95,6 +95,7 @@ public class ModuleInfo {
      * 2. The Module must pass a valid class (i.e. itself) to the ModuleInfo.Builder constructor.
      * </li>
      * </ul>
+     * </p>
      * <p>
      * The other fields are set to an empty value automatically by the Builder constructor and do not have to be
      * provided by the Module. In essence, you only need to call the {@linkplain Builder#Builder constructor},

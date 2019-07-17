@@ -2,12 +2,19 @@ package com.github.coleb1911.ghost2.commands.modules.info;
 
 import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.commands.CommandRegistry;
+import com.github.coleb1911.ghost2.commands.meta.CommandContext;
+import com.github.coleb1911.ghost2.commands.meta.CommandType;
 import com.github.coleb1911.ghost2.commands.meta.Module;
-import com.github.coleb1911.ghost2.commands.meta.*;
+import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 public final class ModuleHelp extends Module {
     @ReflectiveAccess
