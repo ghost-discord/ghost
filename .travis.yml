@@ -1,28 +1,24 @@
 language: java
 jdk: openjdk11
 install: true
-
 script:
-  - ./gradlew build --scan -s
-
+- "./gradlew build --scan -s"
 before_deploy:
-  - ./gradlew ghostPackage
-
+- "./gradlew ghostPackage"
 deploy:
   provider: releases
   api_key:
-    secure: s+qsn3Ky8fHUK+14L+Y5RuN3x2EV0K8O7HNZOHPjIUWDTk9pMzE37WX2unohYQ340574/3K3zD7r4Jxj2GpHNqNNahzjfNQ6aBSSYhvhZ9X7EjQ5bMc4E+IpIpPI+5HZnk1TffD5NGKU9FEHn2FbehsOb5gcE5zS6sdBMuOoI8Ou32tXtAz/HLtRoyF6QqrXov2oX9jZPGTFKZHBSo6q/BO/j1kul+qQUaSpNnh2qCxoWV7Nd9LFhra3HdzkO9LSak0eEeFpPYUhkNj/d8YF93ZiLASVsxUtrr1A+9FxV3p7y+qm6RG9jFh9vK5Hn2IiwP7Px8WkaPkvukNvKpRs2M4aJAuTfdvMTJxgdQJvpzVMBu05oevrIjAqmaZwwMZ9+KDXw9hh23T+aSJUfn1P4Qn72P7kFoZwklDSg1TrYFA7HYEKZRjmCAKFT4DQdmKMTyKCTYrtRHQ/naAMo+Wk+faCKTvF4tzFFlrZZMB0xmM/KFSHNcZNFwsr/Y45By81DAE99BU4BlQ/is+drYuL3JjjEcb5kGcyptOinjG+I6DKg1RSsJbTtrXu9eweANpv32rjJCGd5p7avg3c21y9q1ObmrsP8jirKPUK1RYS1QNJljWW79zxOxIZPvqfyjiFPHLkEpMCFkYgm7Sao3H9vnYYJHPIT4OvK9Hof5hDDd4=
+    secure: xg9bEDqfPBO9eAIyv+qpXx3fQGIX9u4cKeGoSvwsTtHIv9OimVJMBSG+/iVGUiNqEZMCngZA3kh8wZn6Qftw/+Tel9dSDJykVCKAuIhhX0ZdIVjJ3gH0W+qUpBYdCMj04niP8DKQktfUrNc3geGGYFQF4cw7FfvTLIjkMfGQVlWEvzrHWlw1zKRtVwWavJ1uFh7vX4sDiKtuZOshfRBlZn1RVtz44DoQV98+sjRK9ppRKaMfT8ZGuDpCyZHLXxeG90yX2SRJoxv0E+8xyv/UjyzH78e7WtW3BGpHzGAGhbRbpIDZ5YmBITmN8Coadmy5svhgs/Kv5Gk+ki7VNNRNNaSVJ9BoSdCTe0QTQxkSg4Sw57GLHJUbefb1HsPxYP01g0SEQZkQdL1b/xmO53jKcZxPiEk0Ajv/CIpZkTl5LX4Nk4K4lN9RTAwWK3rCuTPy9EtOHB4w29wV8DmqZojF8BBgnfaYWmXyRhBofA4BGUF3IYao6o4EYteFcafgpNB03GUJRIAHpGB1Q+dzYQJmttDU5wsNXK2TbQTnVk2s4SibLSStSmkpbcgk38fBWPa6hVi1mwMi1Q2qtYUT/PUfRp0WE36YqAmrkmnSh0OBjx+dfcMAqRxfqxN/sodJrE4dhnYJ5wTmBneyqUVZjcFZvD71OxYOvvt0vn1a1mOmgrE=
   file_glob: true
-  file: bt_output/*.zip
+  file: $TRAVIS_BUILD_DIR/bt_output/*.zip
   skip_cleanup: true
   on:
+    repo: cbryant02/ghost2
     tags: true
-
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
