@@ -17,15 +17,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class JDKDownloader {
+class JDKDownloader {
     private static final String URL_FORMAT = "https://api.adoptopenjdk.net/v2/info/releases/openjdk11?openjdk_impl=hotspot&arch=x64&type=jdk&heap_size=normal&release=latest&os=";
 
     private static CloseableHttpClient client;
@@ -67,37 +67,41 @@ public class JDKDownloader {
         Logger.info("Downloading {} JDK: {}", platform.toString(), downloadUrl);
 
         // Download
-        DownloadRunnable runnable;
         try (DownloadProgress progress = new DownloadProgress()) {
-            // Progress bar
-            // Unfortunately not visible because Gradle eats System.out
+            final AtomicInteger lastLogged = new AtomicInteger();
+            final double bytesToMb = Math.pow(10, 6);
+            final int totalSegments = 40;
+
             progress.subscribe(update -> {
-                final double bytesToMb = Math.pow(10, 6);
-                double mbCurrent = update.current / bytesToMb;
-                double mbTotal = update.target / bytesToMb;
+                synchronized (lastLogged) {
+                    final int currentSegments = update.current / (update.total / totalSegments);
+                    if (Math.abs((currentSegments % 10) - 10) == 1 && lastLogged.get() != currentSegments) {
+                        final double mbCurrent = update.current / bytesToMb;
+                        final double mbTotal = update.total / bytesToMb;
+                        final String line = String.format("[%s%s] %.1fmb / %.1fmb >> %s",
+                                "|".repeat(currentSegments),
+                                " ".repeat(totalSegments - currentSegments),
+                                mbCurrent,
+                                mbTotal,
+                                progress.targetFile.getName());
 
-                final int segments = 40;
-                final int nSegments = (int) Math.floor(mbCurrent / (mbTotal / segments));
-
-                String line = String.format("[%s%s] %.1fmb / %.1fmb >> %s\r", "|".repeat(nSegments), " ".repeat(segments - nSegments), mbCurrent, mbTotal, folder);
-                try {
-                    System.out.write(line.getBytes(StandardCharsets.UTF_8));
-                } catch (IOException e) {
-                    Logger.error(e);
+                        Logger.info(line);
+                        lastLogged.set(currentSegments);
+                    }
                 }
             });
 
             // Start download runnable
-            runnable = new DownloadRunnable(downloadUrl, folder, progress);
+            DownloadRunnable runnable = new DownloadRunnable(downloadUrl, folder, progress);
             executor.submit(runnable, null);
             progress.latch.await();
-        }
 
-        // Cleanup and exit
-        client.close();
-        executor.shutdown();
-        Logger.info("Done.");
-        return runnable.getOutputFile();
+            // Cleanup and exit
+            client.close();
+            executor.shutdown();
+            Logger.info("Done.");
+            return progress.targetFile;
+        }
     }
 
     /**
@@ -140,7 +144,6 @@ public class JDKDownloader {
     private static class DownloadRunnable implements Runnable {
         private String url;
         private File path;
-        private File output;
         private DownloadProgress progress;
 
         /**
@@ -168,6 +171,8 @@ public class JDKDownloader {
             HttpGet rq = new HttpGet(url);
             HttpResponse rs;
             int length;
+            File output;
+
             try {
                 rs = client.execute(rq);
 
@@ -181,6 +186,7 @@ public class JDKDownloader {
                 // Fetch filename and check if already downloaded
                 String filename = rs.getFirstHeader("Content-Disposition").getValue().split("=")[1];
                 output = new File(path, filename);
+                progress.targetFile = output;
                 length = Integer.parseInt(rs.getFirstHeader("Content-Length").getValue());
                 if (output.exists()) {
                     if (output.isFile() && output.length() == length) {
@@ -204,16 +210,12 @@ public class JDKDownloader {
                  BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(output), BUFFER_SIZE)) {
                 while ((bytes = in.read(buffer, 0, BUFFER_SIZE)) != -1) {
                     out.write(buffer, 0, bytes);
-                    progress.update(total = total + bytes, length);
+                    progress.update(total += bytes, length);
                 }
                 progress.latch.countDown();
             } catch (IOException e) {
                 Logger.error(e);
             }
-        }
-
-        public File getOutputFile() {
-            return output;
         }
     }
 
@@ -222,14 +224,15 @@ public class JDKDownloader {
      */
     private static class DownloadProgress implements Closeable {
         private int current;
-        private int target;
+        private int total;
         private List<Consumer<DownloadProgress>> subscribers;
         private ExecutorService executor;
         private CountDownLatch latch;
+        private File targetFile;
 
         DownloadProgress() {
             this.current = 0;
-            this.target = -1;
+            this.total = -1;
             this.subscribers = new ArrayList<>();
             executor = Executors.newCachedThreadPool();
             latch = new CountDownLatch(1);
@@ -239,11 +242,11 @@ public class JDKDownloader {
          * Update progress values and dispatch an update event
          *
          * @param current New current progress
-         * @param target  New target progress
+         * @param total  New total progress
          */
-        void update(int current, int target) {
+        void update(int current, int total) {
             this.current = current;
-            this.target = target;
+            this.total = total;
             executor.execute(() -> subscribers.forEach(consumer -> consumer.accept(this)));
         }
 

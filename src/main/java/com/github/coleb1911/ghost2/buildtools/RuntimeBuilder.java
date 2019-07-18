@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public final class RuntimeBuilder {
     private static final String MESSAGE_DONE = "Finished successfully in {} seconds. Results saved to {}.";
-    private static final String SCRIPT_UNIX = "SCRIPTDIR=$(dirname $0)\ncd ${SCRIPTDIR}\n${SCRIPTDIR}/jre/bin/java -Dloader.path=${SCRIPTDIR} -jar ${SCRIPTDIR}/jarname";
-    private static final String SCRIPT_WIN = "cd %~dp0\n%~dp0jre\\bin\\java.exe -Dloader.path=%~dp0 -jar %~dp0jarname";
+    private static final String SCRIPT_UNIX = "SCRIPTDIR=$(dirname $0)\ncd ${SCRIPTDIR}\n${SCRIPTDIR}/jre/bin/java -Dloader.path=${SCRIPTDIR} -jar ${SCRIPTDIR}/";
+    private static final String SCRIPT_WIN = "cd %~dp0\n%~dp0jre\\bin\\java.exe -Dloader.path=%~dp0 -jar %~dp0";
 
     private static Set<String> dependencies = new HashSet<>();
     private static File fatJar;
@@ -137,8 +137,8 @@ public final class RuntimeBuilder {
         FileUtils.copyFile(fatJar, new File(temp, fatJar.getName()));
 
         // Copy start scripts to temp folder
-        FileUtils.write(new File(temp, "start.bat"), SCRIPT_WIN.replace("jarname", fatJar.getName()), StandardCharsets.UTF_8);
-        FileUtils.write(new File(temp, "start.sh"), SCRIPT_WIN.replace("jarname", fatJar.getName()), StandardCharsets.UTF_8);
+        FileUtils.write(new File(temp, "start.bat"), SCRIPT_WIN + fatJar.getName(), StandardCharsets.UTF_8);
+        FileUtils.write(new File(temp, "start.sh"), SCRIPT_UNIX + fatJar.getName(), StandardCharsets.UTF_8);
 
         // Package builds
         File buildFolder = new File("bt_output");

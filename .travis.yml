@@ -1,9 +1,22 @@
 language: java
-jdk: openjdk10
+jdk: openjdk11
 install: true
 
 script:
   - ./gradlew build --scan -s
+
+before_deploy:
+  - ./gradlew ghostPackage
+
+deploy:
+  provider: releases
+  api_key:
+    secure: s+qsn3Ky8fHUK+14L+Y5RuN3x2EV0K8O7HNZOHPjIUWDTk9pMzE37WX2unohYQ340574/3K3zD7r4Jxj2GpHNqNNahzjfNQ6aBSSYhvhZ9X7EjQ5bMc4E+IpIpPI+5HZnk1TffD5NGKU9FEHn2FbehsOb5gcE5zS6sdBMuOoI8Ou32tXtAz/HLtRoyF6QqrXov2oX9jZPGTFKZHBSo6q/BO/j1kul+qQUaSpNnh2qCxoWV7Nd9LFhra3HdzkO9LSak0eEeFpPYUhkNj/d8YF93ZiLASVsxUtrr1A+9FxV3p7y+qm6RG9jFh9vK5Hn2IiwP7Px8WkaPkvukNvKpRs2M4aJAuTfdvMTJxgdQJvpzVMBu05oevrIjAqmaZwwMZ9+KDXw9hh23T+aSJUfn1P4Qn72P7kFoZwklDSg1TrYFA7HYEKZRjmCAKFT4DQdmKMTyKCTYrtRHQ/naAMo+Wk+faCKTvF4tzFFlrZZMB0xmM/KFSHNcZNFwsr/Y45By81DAE99BU4BlQ/is+drYuL3JjjEcb5kGcyptOinjG+I6DKg1RSsJbTtrXu9eweANpv32rjJCGd5p7avg3c21y9q1ObmrsP8jirKPUK1RYS1QNJljWW79zxOxIZPvqfyjiFPHLkEpMCFkYgm7Sao3H9vnYYJHPIT4OvK9Hof5hDDd4=
+  file_glob: true
+  file: bt_output/*.zip
+  skip_cleanup: true
+  on:
+    tags: true
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
