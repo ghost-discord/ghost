@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
@@ -193,7 +194,7 @@ public class Ghost2Application implements ApplicationRunner {
     private boolean lock() {
         try {
             String tempDir = System.getProperty("java.io.tmpdir");
-            lockFile = new RandomAccessFile(tempDir + "ghost2.lock", "rw");
+            lockFile = new RandomAccessFile(tempDir + File.separator + "ghost2.lock", "rw");
             lock = lockFile.getChannel().tryLock();
             return lock != null;
         } catch (IOException e) {
