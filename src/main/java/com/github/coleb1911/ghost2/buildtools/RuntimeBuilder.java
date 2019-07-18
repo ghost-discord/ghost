@@ -1,10 +1,7 @@
 package com.github.coleb1911.ghost2.buildtools;
 
-import com.github.coleb1911.ghost2.Ghost2Application;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import com.github.coleb1911.ghost2.shared.Constants;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
@@ -12,7 +9,6 @@ import org.pmw.tinylog.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -32,12 +28,12 @@ import java.util.Set;
 public final class RuntimeBuilder {
     private static final String MESSAGE_DONE = "Finished successfully in {} seconds. Results saved to {}.";
     private static final String SCRIPT_UNIX = "SCRIPTDIR=$(dirname $0)\ncd ${SCRIPTDIR}\n${SCRIPTDIR}/jre/bin/java -Dloader.path=${SCRIPTDIR} -jar ${SCRIPTDIR}/";
-    private static final String SCRIPT_WIN = "cd %~dp0\n%~dp0jre\\bin\\java.exe -Dloader.path=%~dp0 -jar %~dp0";
+    private static final String SCRIPT_WIN = "cd %~dp0\r\n%~dp0jre\\bin\\java.exe -Dloader.path=%~dp0 -jar %~dp0";
 
     private static Set<String> dependencies = new HashSet<>();
     private static File fatJar;
 
-    public static void main(String[] args) throws JDKNotFoundException, IOException, InterruptedException {
+    public static void main(String[] args) throws JDKNotFoundException, IOException {
         // Log config
         Configurator.defaultConfig()
                 .level(Level.INFO)
@@ -57,25 +53,25 @@ public final class RuntimeBuilder {
 
         // Fetch JDKs for other platforms
         final File jdkDir = new File("xplatformjdk");
-        Map<JDKDownloader.Platform, File> jdks = new EnumMap<>(JDKDownloader.Platform.class);
-        JDKDownloader.Platform p;
-        switch (JDKDownloader.Platform.fromPlatformString(SystemUtils.getPlatform())) {
+        Map<JDKDownloadUtils.Platform, File> jdks = new EnumMap<>(JDKDownloadUtils.Platform.class);
+        JDKDownloadUtils.Platform p;
+        switch (JDKDownloadUtils.Platform.fromPlatformString(SystemUtils.getPlatform())) {
             case WINDOWS:
-                jdks.put(p = JDKDownloader.Platform.OSX, JDKDownloader.download(p, jdkDir));
-                jdks.put(p = JDKDownloader.Platform.LINUX, JDKDownloader.download(p, jdkDir));
+                jdks.put(p = JDKDownloadUtils.Platform.OSX, JDKDownloadUtils.download(p, jdkDir));
+                jdks.put(p = JDKDownloadUtils.Platform.LINUX, JDKDownloadUtils.download(p, jdkDir));
                 break;
             case OSX:
-                jdks.put(p = JDKDownloader.Platform.WINDOWS, JDKDownloader.download(p, jdkDir));
-                jdks.put(p = JDKDownloader.Platform.LINUX, JDKDownloader.download(p, jdkDir));
+                jdks.put(p = JDKDownloadUtils.Platform.WINDOWS, JDKDownloadUtils.download(p, jdkDir));
+                jdks.put(p = JDKDownloadUtils.Platform.LINUX, JDKDownloadUtils.download(p, jdkDir));
                 break;
             case LINUX:
-                jdks.put(p = JDKDownloader.Platform.WINDOWS, JDKDownloader.download(p, jdkDir));
-                jdks.put(p = JDKDownloader.Platform.OSX, JDKDownloader.download(p, jdkDir));
+                jdks.put(p = JDKDownloadUtils.Platform.WINDOWS, JDKDownloadUtils.download(p, jdkDir));
+                jdks.put(p = JDKDownloadUtils.Platform.OSX, JDKDownloadUtils.download(p, jdkDir));
                 break;
         }
 
         // Unzip JDK archives
-        for (Map.Entry<JDKDownloader.Platform, File> jdk : jdks.entrySet()) {
+        for (Map.Entry<JDKDownloadUtils.Platform, File> jdk : jdks.entrySet()) {
             // Get and log info
             String name = jdk.getKey().toString();
             File archive = jdk.getValue();
@@ -85,13 +81,13 @@ public final class RuntimeBuilder {
 
             // Unzip and replace path in entry set
             FileUtils.forceMkdir(outputFolder);
-            SystemUtils.unzip(archive, outputFolder);
+            SystemUtils.extract(archive, outputFolder);
             jdks.put(jdk.getKey(), outputFolder);
         }
 
         // Run jlink for each platform
         final File jlink = SystemUtils.locateBinary("jlink");
-        for (JDKDownloader.Platform platform : JDKDownloader.Platform.values()) {
+        for (JDKDownloadUtils.Platform platform : JDKDownloadUtils.Platform.values()) {
             File modulePath = null;
             if (jdks.containsKey(platform)) {
                 File unzipped = jdks.get(platform);
@@ -99,7 +95,7 @@ public final class RuntimeBuilder {
                 assert unzippedJdks != null;
                 for (File f : unzippedJdks) {
                     if (f.getName().contains("jdk-11") && !f.getName().contains("._")) {
-                        String path = platform == JDKDownloader.Platform.OSX ?
+                        String path = platform == JDKDownloadUtils.Platform.OSX ?
                                 "Contents" + File.separator + "Home" + File.separator + "jmods" :
                                 "jmods";
                         modulePath = new File(f, path);
@@ -144,11 +140,11 @@ public final class RuntimeBuilder {
         File buildFolder = new File("bt_output");
         if (buildFolder.exists())
             FileUtils.cleanDirectory(buildFolder);
-        for (JDKDownloader.Platform platform : JDKDownloader.Platform.values()) {
+        for (JDKDownloadUtils.Platform platform : JDKDownloadUtils.Platform.values()) {
             // Locate files
-            String archiveName = String.format("ghost2-%s-%s", platform.toString(), Ghost2Application.VERSION_STRING);
+            String archiveName = String.format("ghost2-%s-%s", platform.toString(), Constants.VERSION_STRING);
             File jreFolder = new File(temp, "jres" + File.separator + platform.toString());
-            File script = platform == JDKDownloader.Platform.WINDOWS ? new File(temp, "start.bat") : new File(temp, "start.sh");
+            File script = platform == JDKDownloadUtils.Platform.WINDOWS ? new File(temp, "start.bat") : new File(temp, "start.sh");
             File outputFolder = new File(buildFolder, archiveName);
             FileUtils.forceMkdir(outputFolder);
 
@@ -157,8 +153,10 @@ public final class RuntimeBuilder {
             FileUtils.copyDirectory(jreFolder, new File(outputFolder, "jre"));
             FileUtils.copyFile(script, new File(outputFolder, script.getName()));
             FileUtils.copyFile(fatJar, new File(outputFolder, fatJar.getName()));
+
             Logger.info("Finalizing {}: compressing", platform.toString());
-            compress(outputFolder, new File(buildFolder, archiveName + ".zip"));
+            SystemUtils.compress(outputFolder, new File(buildFolder, archiveName + ".zip"));
+
             Logger.info("Finalizing {}: cleaning up", platform.toString());
             FileUtils.deleteDirectory(outputFolder);
         }
@@ -167,29 +165,6 @@ public final class RuntimeBuilder {
         long end = System.currentTimeMillis();
         Logger.info(MESSAGE_DONE, new DecimalFormat("#.##").format((end - start) / 1000.0), buildFolder.getAbsolutePath());
         FileUtils.deleteDirectory(temp);
-    }
-
-    private static void compress(File dir, File outputFile) throws IOException {
-        try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(outputFile)) {
-            compressDirectory(dir.getAbsoluteFile(), dir, out);
-        }
-    }
-
-    private static void compressDirectory(File root, File source, ZipArchiveOutputStream out) throws IOException {
-        for (File file : source.listFiles()) {
-            if (file.isDirectory()) {
-                compressDirectory(root, new File(source, file.getName()), out);
-            } else {
-                String entryName = StringUtils.removeStart(file.getAbsolutePath(), root.getAbsolutePath()).replaceFirst("\\\\", "");
-                ZipArchiveEntry entry = (ZipArchiveEntry) out.createArchiveEntry(file, entryName);
-
-                out.putArchiveEntry(entry);
-                try (FileInputStream in = new FileInputStream(file)) {
-                    IOUtils.copy(in, out);
-                }
-                out.closeArchiveEntry();
-            }
-        }
     }
 
     /**
@@ -212,8 +187,6 @@ public final class RuntimeBuilder {
         }
 
         // Locate ghost2 JAR
-        // generateJre depends on bootJar, we can safely assume the
-        // build dir is set up and contains our jar
         File[] jars = new File("build/libs").listFiles();
         assert jars != null;
         for (File j : jars) {
