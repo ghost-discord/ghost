@@ -20,6 +20,6 @@ public final class ModuleInvite extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         Snowflake clientId = Objects.requireNonNull(ctx.getClient().getApplicationInfo().block()).getId();
-        ctx.reply(String.format("https://discordapp.com/oauth2/authorize?client_id=%d&scope=bot&permissions=3214336", clientId.asLong()));
+        ctx.reply("https://discordapp.com/oauth2/authorize?client_id=" + clientId.asLong() + "&scope=bot&permissions=3214336");
     }
 }

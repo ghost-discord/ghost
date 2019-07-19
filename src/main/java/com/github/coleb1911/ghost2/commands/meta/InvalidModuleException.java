@@ -7,7 +7,6 @@ import java.util.StringJoiner;
  * Thrown to indicate that a {@link Module} subclass is written incorrectly.
  */
 public class InvalidModuleException extends RuntimeException {
-    private static final String MESSAGE = "Module subclass %s is written incorrectly. Refer to the wiki for help. (Reason(s): %s)";
 
     private final Class<? extends Module> module;
     private final Set<Reason> reasons;
@@ -29,7 +28,7 @@ public class InvalidModuleException extends RuntimeException {
      * @param reasons Set of Reasons for the exception
      */
     public InvalidModuleException(Class<? extends Module> module, Set<Reason> reasons) {
-        super(String.format(MESSAGE, module.getName(), Reason.concat(reasons)));
+        super(formatErrorMessage(module.getName(), Reason.concat(reasons)));
         this.module = module;
         this.reasons = reasons;
     }
@@ -43,7 +42,7 @@ public class InvalidModuleException extends RuntimeException {
      * @param exceptionInConstructor The exception from its cosntructor
      */
     public InvalidModuleException(Class<? extends Module> module, Throwable exceptionInConstructor) {
-        super(String.format(MESSAGE, module.getName(),
+        super(formatErrorMessage(module.getName(),
                 (exceptionInConstructor instanceof InvalidModuleException) ?
                         Reason.EXCEPTION_IN_CONSTRUCTOR + exceptionInConstructor.getClass().getSimpleName() + ": " + ((InvalidModuleException) exceptionInConstructor).getReasonsString() :
                         Reason.EXCEPTION_IN_CONSTRUCTOR + exceptionInConstructor.getClass().getName()));
@@ -65,6 +64,19 @@ public class InvalidModuleException extends RuntimeException {
         return module;
     }
 
+    /**
+     * Formats the error message.
+     * @param moduleName             The module name
+     * @param reasons                The reasons description. Might contain more than one reason.
+     */
+    private static String formatErrorMessage(String moduleName, String reasons){
+        return "Module subclass "
+                + moduleName
+                + " is written incorrectly. Refer to the wiki for help. (Reason(s): "
+                + reasons
+                + ")";
+
+    }
     /**
      * The many causes of an {@code InvalidModuleException}.
      */

@@ -32,12 +32,12 @@ public final class ModulePrefix extends Module {
         // Get prefix and check length
         String prefix = ctx.getArgs().get(0);
         if (prefix.length() > GuildMeta.PREFIX_LENGTH) {
-            ctx.reply(String.format("That prefix is too long. The maximum prefix length is %d.", GuildMeta.PREFIX_LENGTH));
+            ctx.reply("That prefix is too long. The maximum prefix length is " + GuildMeta.PREFIX_LENGTH +".");
             return;
         }
 
         // Save prefix
         guildRepo.save(new GuildMeta(ctx.getGuild().getId().asLong(), prefix));
-        ctx.reply(String.format("Set prefix to `%s`.", prefix));
+        ctx.reply("Set prefix to `"+ prefix + "`.");
     }
 }
