@@ -37,7 +37,7 @@ public final class RuntimeBuilder {
     private static final String ERROR_MODULES_MISSING = "Couldn't find the Java module directory. Ensure you have a valid Java 11 installation and that your JAVA_HOME or PATH points to it.";
     private static final String ERROR_ARTIFACT_MISSING = "A ghost2 JAR artifact was not found. Check to make sure bootJar completed without errors.";
     private static final String MESSAGE_DONE = "Finished successfully in {} seconds. Results saved to {}.";
-    private static final String SCRIPT_UNIX = "SCRIPTDIR=$(dirname $0)\ncd ${SCRIPTDIR}\n${SCRIPTDIR}/jre/bin/java -Dloader.path=${SCRIPTDIR} -jar ${SCRIPTDIR}/";
+    private static final String SCRIPT_UNIX = "#!/bin/bash\nSCRIPTDIR=$(dirname $0)\ncd ${SCRIPTDIR}\n${SCRIPTDIR}/jre/bin/java -Dloader.path=${SCRIPTDIR} -jar ${SCRIPTDIR}/";
     private static final String SCRIPT_WIN = "cd %~dp0\r\n%~dp0jre\\bin\\java.exe -Dloader.path=%~dp0 -jar %~dp0";
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
