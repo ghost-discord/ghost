@@ -1,5 +1,6 @@
 package com.github.coleb1911.ghost2.buildtools;
 
+import com.github.coleb1911.ghost2.buildtools.JDKDownloadUtils.Platform;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Various system-related tools.
@@ -25,10 +27,14 @@ import java.io.IOException;
 final class SystemUtils {
     static final int BUFFER_SIZE = 8192;
     static final String USER_AGENT = System.getProperty("java.version") + "/" + "Apache HttpClient 4.5.9";
+    static final Platform PLATFORM = Platform.fromPlatformString(System.getProperty("os.name"));
+    static final String CLASSPATH = System.getProperty("java.class.path");
+    static final boolean VERBOSE = "true".equals(System.getenv("BT_VERBOSE"));
 
-    private static final String PLATFORM = System.getProperty("os.name");
-    private static final String CLASSPATH = System.getProperty("java.class.path");
-    private static final String EXEC_EXT = (PLATFORM.startsWith("Windows")) ? ".exe" : "";
+    private static final String ERROR_JDK_NOT_FOUND = "Could not find the JDK via JAVA_HOME or your PATH variable." + System.lineSeparator() +
+            "Check to make sure one of these variables is set, contains a valid JDK location, and contains JDK binaries" + System.lineSeparator() +
+            "for your platform that you have permission to execute.";
+    private static final String EXEC_EXT = (PLATFORM.toString().startsWith("Windows")) ? ".exe" : "";
     private static final String ENV_HOME = "JAVA_HOME";
     private static final String ENV_PATH = "PATH";
 
@@ -44,10 +50,10 @@ final class SystemUtils {
      * @param name Name of the binary (excluding the file extension)
      * @return Binary file
      * @throws IllegalArgumentException If the JDK doesn't contain the given binary
-     * @throws JDKNotFoundException     If a valid JDK can't be located on the system
+     * @throws FileNotFoundException    If a valid JDK can't be located on the system
      * @throws IOException              If an I/O exception occurs while attempting to locate the binary
      */
-    static File locateBinary(String name) throws JDKNotFoundException, IOException {
+    static File locateBinary(final String name) throws IOException {
         if (jdkPath == null || !jdkPath.exists())
             locateJdk();
 
@@ -61,21 +67,29 @@ final class SystemUtils {
     /**
      * Attempts to find a JDK via JAVA_HOME or PATH.
      *
-     * @throws JDKNotFoundException If a valid JDK can't be located on the system
-     * @throws IOException          If an I/O exception occurs while attempting to locate the JDK
+     * @throws FileNotFoundException If a valid JDK can't be located on the system
+     * @throws IOException           If an I/O exception occurs while attempting to locate the JDK
      */
-    private static void locateJdk() throws JDKNotFoundException, IOException {
+    private static void locateJdk() throws IOException {
         final String home = System.getenv(ENV_HOME);
         final String path = System.getenv(ENV_PATH);
 
+        // Find JDK from JAVA_HOME
         if (StringUtils.isNotBlank(home)) {
             findJdkFromHome(home);
-        } else if (StringUtils.isNotBlank(path)) {
-            findJdkFromPath(path);
-        } else {
-            throw new JDKNotFoundException();
         }
-        Logger.info("Found local JDK installation: {}", jdkPath.getAbsolutePath());
+
+        // Find JDK from PATH if JAVA_HOME method failed
+        if (StringUtils.isNotBlank(path) && jdkPath == null) {
+            findJdkFromPath(path);
+        }
+
+        // JDK should be found at this point.
+        if (jdkPath == null || jdkBin == null) {
+            throw new FileNotFoundException(ERROR_JDK_NOT_FOUND);
+        }
+
+        Logger.debug("Found local JDK installation: {}", jdkPath.getAbsolutePath());
     }
 
     /**
@@ -84,7 +98,6 @@ final class SystemUtils {
      * @param home JAVA_HOME variable
      */
     private static void findJdkFromHome(final String home) {
-        // Use JAVA_HOME if defined
         File binDir = new File(home + File.separator + "bin");
         File javaExec = new File(binDir, "java" + EXEC_EXT);
 
@@ -124,7 +137,7 @@ final class SystemUtils {
      * @return Canonicalized target of the link
      * @throws IOException If an I/O error occurs while processing the link
      */
-    private static File findSymlinkTarget(File link) throws IOException {
+    private static File findSymlinkTarget(final File link) throws IOException {
         if (FileUtils.isSymlink(link)) {
             File target = link.toPath().toRealPath().toFile();
             if (FileUtils.isSymlink(target)) {
@@ -143,7 +156,7 @@ final class SystemUtils {
      * @param target  Directory to extract to
      * @throws FileNotFoundException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading
      */
-    static void extract(File archive, File target) throws IOException {
+    static void extract(final File archive, final File target) throws IOException {
         if (!target.isDirectory()) {
             throw new IllegalArgumentException("Target directory does not exist or is not a directory.");
         }
@@ -195,11 +208,12 @@ final class SystemUtils {
      * @param outputFile Output archive
      * @throws IOException If an I/O error occurs while compressing the directory
      */
-    static void compress(File dir, File outputFile) throws IOException {
+    static void compress(final File dir, final File outputFile) throws IOException {
         if (!dir.isDirectory()) {
             throw new IllegalArgumentException("Target directory is not a directory");
         }
 
+        FileUtils.openOutputStream(outputFile, false);
         try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(outputFile)) {
             compressDirectory(dir.getAbsoluteFile(), dir, out);
         }
@@ -213,7 +227,7 @@ final class SystemUtils {
      * @param out    Archive output stream
      * @throws IOException If an I/O error occurs while compressing the directory
      */
-    private static void compressDirectory(File root, File source, ZipArchiveOutputStream out) throws IOException {
+    private static void compressDirectory(final File root, final File source, final ZipArchiveOutputStream out) throws IOException {
         for (File file : FileUtils.listFiles(source, null, true)) {
             if (file.isDirectory()) {
                 compressDirectory(root, new File(source, file.getName()), out);
@@ -231,24 +245,47 @@ final class SystemUtils {
     }
 
     /**
-     * @return This system's platform string
+     * Ensures the directories specified exist and are completely empty.
+     *
+     * @param directories Directories to clean and/or create
+     * @throws IOException If an I/O error occurs while cleaning or creating a directory
      */
-    static String getPlatform() {
-        return PLATFORM;
+    static void cleanAndCreate(final File... directories) throws IOException {
+        for (File dir : directories) {
+            if (dir.exists()) {
+                FileUtils.cleanDirectory(dir);
+            } else {
+                FileUtils.forceMkdir(dir);
+            }
+        }
     }
 
     /**
-     * @return The classpath passed to this JVM instance
+     * Lists files and directories in a directory.<br>
+     * Will never return {@code null}, unlike {@link File#listFiles}.
+     *
+     * @param directory Directory to list files from
+     * @throws IllegalArgumentException If the file given is not a directory
+     * @throws IOException If an I/O exception occurs while attempting to list the files
      */
-    static String getClasspath() {
-        return CLASSPATH;
+    static List<File> listFiles(final File directory) throws IOException {
+        if (!directory.isDirectory()) {
+            throw new IllegalArgumentException("Target path is not a directory");
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            throw new IOException("I/O error occurred while processing directory " + directory.getAbsolutePath());
+        }
+
+        return List.of(files);
     }
 
     /**
      * @return The JDK path as defined by JAVA_HOME or PATH
-     * @throws JDKNotFoundException If a valid JDK can't be located on the system
+     * @throws FileNotFoundException If a valid JDK can't be located on the system
      */
-    static File getJdkPath() throws JDKNotFoundException, IOException {
+    static File getJdkPath() throws IOException {
         if (jdkPath == null)
             locateJdk();
         return jdkPath;

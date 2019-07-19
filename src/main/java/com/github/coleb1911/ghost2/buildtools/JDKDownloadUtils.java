@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.github.coleb1911.ghost2.buildtools.SystemUtils.BUFFER_SIZE;
 import static com.github.coleb1911.ghost2.buildtools.SystemUtils.USER_AGENT;
@@ -27,19 +30,19 @@ class JDKDownloadUtils {
     private static final String URL_FORMAT = "https://api.adoptopenjdk.net/v2/info/releases/openjdk11?openjdk_impl=hotspot&arch=x64&type=jdk&heap_size=normal&release=latest&os=";
 
     /**
-     * Download the latest Java 11 JDK for a platform.
+     * Download the latest Java 11 JDK for a platform.<br>
+     * Blocks until finished.
      *
      * @param platform Target platform
      * @param saveDir  Folder to save JDK archive in
      * @throws IOException If a general I/O error occurs while downloading the file
      */
-    static File download(Platform platform, File saveDir) throws IOException {
+    static File download(final Platform platform, final File saveDir) throws IOException {
         // Get download URI
-        URI downloadUri = fetchDownloadUri(platform);
-        Logger.info("Downloading {} JDK: {}", platform.toString(), downloadUri.toString());
+        final URI downloadUri = fetchDownloadUri(platform);
 
         // Start download
-        File outputFile;
+        final File outputFile;
         try (Download download = new Download(downloadUri, saveDir)) {
             outputFile = download.start();
         }
@@ -54,8 +57,8 @@ class JDKDownloadUtils {
      * @param platform Target platform
      * @return URI for the JDK
      */
-    private static URI fetchDownloadUri(Platform platform) throws IOException {
-        URI uri;
+    private static URI fetchDownloadUri(final Platform platform) throws IOException {
+        final URI uri;
         try (CloseableHttpClient client = HttpClientBuilder.create()
                 .setUserAgent(USER_AGENT)
                 .build()) {
@@ -92,26 +95,46 @@ class JDKDownloadUtils {
         LINUX("linux"),
         OSX("mac");
 
-        private String apiName;
+        /**
+         * Name of this platform in the AdoptOpenJDK API
+         */
+        private final String apiName;
 
-        Platform(String name) {
-            this.apiName = name;
+        Platform(final String apiName) {
+            this.apiName = apiName;
         }
 
         /**
-         * Convert a platform string from {@code System.getProperty("os.name")} to an enum value
+         * Get the {@code Platform} equivalent of a platform string from {@code System.getProperty("os.name")}.
          *
          * @param name Platform string
          * @return Enum value
          * @throws IllegalArgumentException If the platform is unsupported or nonexistent
          */
-        public static Platform fromPlatformString(String name) {
+        public static Platform fromPlatformString(final String name) {
             if (name.startsWith("Windows")) return WINDOWS;
             else if (name.startsWith("Mac")) return OSX;
             else if (name.contains("Linux")) return LINUX;
             throw new IllegalArgumentException("Unsupported or nonexistent platform");
         }
 
+        /**
+         * Get all the {@code Platforms} that aren't the specified platform.
+         *
+         * @param platform Target platform
+         * @return All the other {@code Platform} values
+         */
+        public static Set<Platform> not(final Platform platform) {
+            Set<Platform> others = new HashSet<>(Arrays.asList(Platform.values()));
+            others.remove(platform);
+            return others;
+        }
+
+        /**
+         * Returns this {@code Platform}'s name in title-case.
+         *
+         * @return This {@code Platform}'s name in title-case
+         */
         @Override
         public String toString() {
             return this == OSX ? name() : StringUtils.capitalize(name().toLowerCase());
@@ -128,13 +151,13 @@ class JDKDownloadUtils {
         private CloseableHttpClient client;
 
         /**
-         * Construct a new DownloadRunnable.
+         * Construct a new {@code Download}.
          *
          * @param uri     Direct URI to target file
          * @param saveDir Directory to save file in
          * @throws IOException If an I/O error occurs while creating {@code saveDir} or the parent directory doesn't exist
          */
-        Download(URI uri, File saveDir) throws IOException {
+        Download(final URI uri, final File saveDir) throws IOException {
             this.uri = uri;
             this.saveDir = saveDir;
 
@@ -145,7 +168,7 @@ class JDKDownloadUtils {
         }
 
         /**
-         * Start this Download.<br>
+         * Start this {@code Download.}<br>
          * Blocks until finished.
          *
          * @return Downloaded file
@@ -180,9 +203,9 @@ class JDKDownloadUtils {
         }
 
         /**
-         * Sends a download request to the server for the given URL.
+         * Sends a download request to the server for the given URI.
          *
-         * @return The download input stream
+         * @return The server's response
          */
         private CloseableHttpResponse sendDownloadRequest() throws IOException {
             // Build client
