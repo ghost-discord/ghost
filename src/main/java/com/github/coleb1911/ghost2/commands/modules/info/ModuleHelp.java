@@ -82,7 +82,7 @@ public final class ModuleHelp extends Module {
                     } else {
                         StringJoiner joiner = new StringJoiner(", ");
                         for (ModuleInfo info : module.getValue()) {
-                            joiner.add(String.format("`%s`", info.getName()));
+                            joiner.add("`" + info.getName() + "`");
                         }
                         commandList = joiner.toString();
                     }

@@ -100,7 +100,7 @@ public class Ghost2Application implements ApplicationRunner {
 
         // Set up TinyLog
         String dateString = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH''mm''ss").format(LocalDateTime.now());
-        String logFileName = String.format("log/log_%s.txt", dateString);
+        String logFileName = "log/log_" + dateString + ".txt";
         Configurator.defaultConfig()
                 .level(args.containsOption("debug") ? Level.DEBUG : Level.INFO)
                 .addWriter(new FileWriter(logFileName))
@@ -257,7 +257,8 @@ public class Ghost2Application implements ApplicationRunner {
                     GuildMeta meta = guildRepo.findById(e.getGuildId().asLong()).orElseThrow();
                     if (meta.getAutoRoleEnabled() && !meta.getAutoRoleConfirmationEnabled()) {
                         e.getMember().addRole(Snowflake.of(meta.getAutoRoleId()), "Autorole").subscribe();
-                        String dm = String.format("Welcome to %s! You've been given your role automatically.", Objects.requireNonNull(e.getGuild().block()).getName());
+                        String guildName = Objects.requireNonNull(e.getGuild().block()).getName();
+                        String dm = "Welcome to " + guildName + "! You've been given your role automatically.";
                         e.getMember().getPrivateChannel().subscribe(c -> c.createMessage(dm).subscribe());
                     }
                 });
