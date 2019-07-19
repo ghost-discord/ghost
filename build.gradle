@@ -96,4 +96,6 @@ task ghostPackage(type:JavaExec) {
 
 clean {
     delete "${rootDir}/bt_temp"
+    delete "${rootDir}/bt_out"
+    delete "${rootDir}/bt_xplatform"
 }
