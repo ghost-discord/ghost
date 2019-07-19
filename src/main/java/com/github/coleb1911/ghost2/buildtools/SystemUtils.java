@@ -232,7 +232,7 @@ final class SystemUtils {
             if (file.isDirectory()) {
                 compressDirectory(root, new File(source, file.getName()), out);
             } else {
-                String entryName = StringUtils.removeStart(file.getAbsolutePath(), root.getAbsolutePath()).replaceFirst("\\\\", "");
+                String entryName = StringUtils.removeStart(file.getAbsolutePath(), root.getAbsolutePath()).replaceFirst(PLATFORM == Platform.WINDOWS ? "\\\\" : "/", "");
                 ZipArchiveEntry entry = (ZipArchiveEntry) out.createArchiveEntry(file, entryName);
 
                 out.putArchiveEntry(entry);
@@ -270,7 +270,7 @@ final class SystemUtils {
      */
     static List<File> listFiles(final File directory) throws IOException {
         if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("Target path is not a directory");
+            throw new IllegalArgumentException("Target is not a directory");
         }
 
         File[] files = directory.listFiles();
