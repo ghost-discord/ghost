@@ -1,3 +1,6 @@
+/**
+ * Commands used to control music playback.
+ */
 @CommandPackage(CommandType.MUSIC)
 package com.github.coleb1911.ghost2.commands.modules.music;
 

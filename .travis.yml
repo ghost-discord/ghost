@@ -1,0 +1,24 @@
+language: java
+jdk: openjdk11
+install: true
+script:
+- "./gradlew build --scan -s"
+before_deploy:
+- "./gradlew ghostPackage"
+deploy:
+  provider: releases
+  api_key:
+    secure: xg9bEDqfPBO9eAIyv+qpXx3fQGIX9u4cKeGoSvwsTtHIv9OimVJMBSG+/iVGUiNqEZMCngZA3kh8wZn6Qftw/+Tel9dSDJykVCKAuIhhX0ZdIVjJ3gH0W+qUpBYdCMj04niP8DKQktfUrNc3geGGYFQF4cw7FfvTLIjkMfGQVlWEvzrHWlw1zKRtVwWavJ1uFh7vX4sDiKtuZOshfRBlZn1RVtz44DoQV98+sjRK9ppRKaMfT8ZGuDpCyZHLXxeG90yX2SRJoxv0E+8xyv/UjyzH78e7WtW3BGpHzGAGhbRbpIDZ5YmBITmN8Coadmy5svhgs/Kv5Gk+ki7VNNRNNaSVJ9BoSdCTe0QTQxkSg4Sw57GLHJUbefb1HsPxYP01g0SEQZkQdL1b/xmO53jKcZxPiEk0Ajv/CIpZkTl5LX4Nk4K4lN9RTAwWK3rCuTPy9EtOHB4w29wV8DmqZojF8BBgnfaYWmXyRhBofA4BGUF3IYao6o4EYteFcafgpNB03GUJRIAHpGB1Q+dzYQJmttDU5wsNXK2TbQTnVk2s4SibLSStSmkpbcgk38fBWPa6hVi1mwMi1Q2qtYUT/PUfRp0WE36YqAmrkmnSh0OBjx+dfcMAqRxfqxN/sodJrE4dhnYJ5wTmBneyqUVZjcFZvD71OxYOvvt0vn1a1mOmgrE=
+  file_glob: true
+  file: $TRAVIS_BUILD_DIR/bt_output/*.zip
+  skip_cleanup: true
+  on:
+    repo: cbryant02/ghost2
+    tags: true
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"

@@ -1,3 +1,6 @@
+/**
+ * Commands that provide miscellaneous useful functionality.
+ */
 @CommandPackage(CommandType.UTILITY)
 package com.github.coleb1911.ghost2.commands.modules.utility;
 

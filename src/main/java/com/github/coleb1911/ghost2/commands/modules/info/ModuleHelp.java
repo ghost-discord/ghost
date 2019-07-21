@@ -6,17 +6,18 @@ import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.CommandType;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
-import discord4j.core.DiscordClient;
-import discord4j.core.object.entity.User;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
-// TODO: Add a text-only help list if the bot is unable to send embeds
-// Apparently there's a way to disable embeds through permissions, but I can't find the related permission.
-// I'd like to just get all of this new code pushed out instead of wasting my time digging around in
-// Discord's awful API documentation for 2 hours just to fix one module.
-public class ModuleHelp extends Module {
+public final class ModuleHelp extends Module {
+    @ReflectiveAccess
     public ModuleHelp() {
         super(new ModuleInfo.Builder(ModuleHelp.class)
                 .withName("help")
@@ -24,15 +25,13 @@ public class ModuleHelp extends Module {
     }
 
     @Override
-    public void invoke(CommandContext ctx) {
-        DiscordClient client = Ghost2Application.getApplicationInstance().getClient();
-        User self = client.getSelf().block();
-        assert self != null;
+    public void invoke(@NotNull CommandContext ctx) {
+        CommandRegistry registry = Ghost2Application.getApplicationInstance().getDispatcher().getRegistry();
 
         // Single-command help
         if (ctx.getArgs().size() > 0) {
             // Fetch & null-check CommandInfo
-            ModuleInfo info = CommandRegistry.getInfo(ctx.getArgs().get(0));
+            ModuleInfo info = registry.getInfo(ctx.getArgs().get(0));
             if (null == info) {
                 ctx.reply(Module.REPLY_COMMAND_INVALID);
                 return;
@@ -45,8 +44,9 @@ public class ModuleHelp extends Module {
                     aliasList = "n/a";
                 } else {
                     StringJoiner joiner = new StringJoiner(", ");
-                    for (String alias : info.getAliases())
+                    for (String alias : info.getAliases()) {
                         joiner.add(alias);
+                    }
                     aliasList = joiner.toString();
                 }
 
@@ -54,19 +54,24 @@ public class ModuleHelp extends Module {
                 embedSpec.addField("Name", info.getName(), false);
                 embedSpec.addField("Description", info.getDescription(), false);
                 embedSpec.addField("Aliases", aliasList, false);
-                embedSpec.addField("Category", info.getType().getFormattedName(), false);
+                embedSpec.addField("Category", info.getType().getIcon() + info.getType().getFormattedName(), false);
             })).block();
-            // Full command list
-        } else {
+        } else { // Full command list
             // Categorize all available modules
             Map<CommandType, List<ModuleInfo>> modules = new LinkedHashMap<>();
-            for (CommandType type : CommandType.values()) modules.put(type, new ArrayList<>());
-            for (ModuleInfo info : CommandRegistry.getAllInfo()) modules.get(info.getType()).add(info);
+
+            for (CommandType type : CommandType.values()) {
+                modules.put(type, new ArrayList<>());
+            }
+
+            for (ModuleInfo info : registry.getAllInfo()) {
+                modules.get(info.getType()).add(info);
+            }
 
             // Build and send embed
             ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
                 embedSpec.setTitle("Help");
-                embedSpec.setAuthor(self.getUsername(), null, self.getAvatarUrl());
+                embedSpec.setAuthor(ctx.getSelf().getUsername(), null, ctx.getSelf().getAvatarUrl());
                 embedSpec.setFooter("See g!help <command> for help with specific commands", null);
                 embedSpec.setTimestamp(Instant.now());
 
@@ -76,8 +81,9 @@ public class ModuleHelp extends Module {
                         commandList = "No commands (...yet)";
                     } else {
                         StringJoiner joiner = new StringJoiner(", ");
-                        for (ModuleInfo info : module.getValue())
-                            joiner.add(String.format("`%s`", info.getName()));
+                        for (ModuleInfo info : module.getValue()) {
+                            joiner.add("`" + info.getName() + "`");
+                        }
                         commandList = joiner.toString();
                     }
 

@@ -9,7 +9,7 @@ public enum CommandType {
     MUSIC("\uD83C\uDFB5"),
     UTILITY("\uD83D\uDD27");
 
-    private String icon;
+    private final String icon;
 
     CommandType(String icon) {
         this.icon = icon;

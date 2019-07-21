@@ -3,8 +3,12 @@ package com.github.coleb1911.ghost2.commands.modules.utility;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
-public class ModulePing extends Module {
+import javax.validation.constraints.NotNull;
+
+public final class ModulePing extends Module {
+    @ReflectiveAccess
     public ModulePing() {
         super(new ModuleInfo.Builder(ModulePing.class)
                 .withName("ping")
@@ -12,7 +16,7 @@ public class ModulePing extends Module {
     }
 
     @Override
-    public void invoke(CommandContext ctx) {
+    public void invoke(@NotNull CommandContext ctx) {
         ctx.reply("Pong!");
     }
 }
