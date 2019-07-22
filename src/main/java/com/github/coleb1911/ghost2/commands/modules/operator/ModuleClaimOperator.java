@@ -31,7 +31,7 @@ public final class ModuleClaimOperator extends Module {
 
     static {
         try {
-            rng = SecureRandom.getInstanceStrong();
+            rng = SecureRandom.getInstance("SHA1PRNG");
         } catch (NoSuchAlgorithmException e) {
             Logger.error(e);
         }
@@ -87,7 +87,7 @@ public final class ModuleClaimOperator extends Module {
     private String generateRandomString() {
         StringBuilder ret = new StringBuilder();
         String[] validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890".split("");
-        while (ret.length() < 15) {
+        while (ret.length() < 80) {
             ret.append(validChars[rng.nextInt(validChars.length)]);
         }
         return ret.toString();
