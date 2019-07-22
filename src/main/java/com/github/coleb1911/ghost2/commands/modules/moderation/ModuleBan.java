@@ -7,6 +7,8 @@ import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
 import reactor.core.publisher.Mono;
 
+import javax.validation.constraints.NotNull;
+
 public final class ModuleBan extends Module {
     public ModuleBan() {
         super(new ModuleInfo.Builder(ModuleBan.class)
@@ -16,7 +18,7 @@ public final class ModuleBan extends Module {
     }
 
     @Override
-    public void invoke(CommandContext ctx) {
+    public void invoke(@NotNull CommandContext ctx) {
         //Check for args
         try{
             ctx.getArgs().get(0);
