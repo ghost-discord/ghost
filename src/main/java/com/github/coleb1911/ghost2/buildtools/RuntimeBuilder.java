@@ -312,6 +312,7 @@ public final class RuntimeBuilder {
 
                     // Remove uncompressed copy
                     FileUtils.forceDelete(releaseDir);
+                    Logger.debug("Finished packaging {} release.", platform.toString());
                 } catch (IOException e) {
                     Logger.error(e, "I/O error occurred while packaging release for " + platform.toString());
                     System.exit(1);

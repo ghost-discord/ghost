@@ -22,7 +22,7 @@ public final class ModulePrefix extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         // Check for at least one argument
         if (ctx.getArgs().isEmpty()) {
             ctx.reply("You didn't supply a prefix.");

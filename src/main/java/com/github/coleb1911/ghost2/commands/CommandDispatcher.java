@@ -24,8 +24,8 @@ import java.util.concurrent.Executors;
  */
 @Component
 @Configurable
-public class CommandDispatcher {
-    private final ExecutorService commandExecutor;
+public final class CommandDispatcher {
+    private final ExecutorService executor;
     @Autowired private GuildMetaRepository guildRepo;
     @Autowired private CommandRegistry registry;
 
@@ -35,7 +35,7 @@ public class CommandDispatcher {
     @ReflectiveAccess
     public CommandDispatcher() {
         // Initialize command registry and thread pool
-        commandExecutor = Executors.newCachedThreadPool();
+        executor = Executors.newCachedThreadPool();
     }
 
     /**
@@ -52,7 +52,7 @@ public class CommandDispatcher {
         // Fetch prefix from database
         // GuildMeta shouldn't be null, otherwise we wouldn't have received the event.
         // We still null-check to be safe and get rid of the warning.
-        GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElse(null);
+        final GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElse(null);
         if (null == meta) {
             return;
         }
@@ -110,7 +110,7 @@ public class CommandDispatcher {
         }
 
         // Finally kick off command thread if all checks are passed
-        commandExecutor.execute(() -> module.invoke(ctx));
+        executor.execute(() -> module.invoke(ctx));
     }
 
     public CommandRegistry getRegistry() {

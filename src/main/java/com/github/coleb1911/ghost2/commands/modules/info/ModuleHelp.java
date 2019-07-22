@@ -25,7 +25,7 @@ public final class ModuleHelp extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         CommandRegistry registry = Ghost2Application.getApplicationInstance().getDispatcher().getRegistry();
 
         // Single-command help

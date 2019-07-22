@@ -45,7 +45,7 @@ public final class ModuleClaimOperator extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         // Generate key & fetch app instance
         String key = generateRandomString();
 

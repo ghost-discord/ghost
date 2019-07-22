@@ -33,7 +33,7 @@ import java.util.Set;
  */
 @Component
 @Configurable
-public class CommandRegistry implements ApplicationListener<ContextRefreshedEvent> {
+public final class CommandRegistry implements ApplicationListener<ContextRefreshedEvent> {
     private static final String MODULE_PACKAGE = "com.github.coleb1911.ghost2.commands.modules";
 
     private final List<Module> instances;

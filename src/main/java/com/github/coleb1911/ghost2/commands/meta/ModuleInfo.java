@@ -21,7 +21,7 @@ import java.util.Set;
  * <li>Command aliases</li>
  * </ul>
  */
-public class ModuleInfo {
+public final class ModuleInfo {
     private final String name;
     private final String description;
     private final PermissionSet botPermissions;
