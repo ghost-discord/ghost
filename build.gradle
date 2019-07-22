@@ -8,7 +8,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group 'com.github.coleb1911'
-version '0.1'
+version '1.0'
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11

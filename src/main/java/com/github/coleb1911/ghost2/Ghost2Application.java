@@ -237,7 +237,7 @@ public class Ghost2Application implements ApplicationRunner {
                         Long id = event.getGuild().getId().asLong();
                         idsToRemove.remove(id);
                         if (!guildRepo.existsById(id)) {
-                            guildRepo.save(new GuildMeta(id, GuildMeta.DEFAULT_PREFIX));
+                            guildRepo.save(new GuildMeta(id));
                         }
                     }
 

@@ -79,10 +79,12 @@ public final class CommandDispatcher {
             ctx.reply(Module.REPLY_GENERAL_ERROR);
             return;
         }
-        for (Permission required : module.getInfo().getUserPermissions()) {
-            if (!invokerPerms.contains(required)) {
-                ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
-                return;
+        if (!invokerPerms.contains(Permission.ADMINISTRATOR)) {
+            for (Permission required : module.getInfo().getUserPermissions()) {
+                if (!invokerPerms.contains(required)) {
+                    ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
+                    return;
+                }
             }
         }
 
@@ -102,10 +104,12 @@ public final class CommandDispatcher {
             ctx.reply(Module.REPLY_GENERAL_ERROR);
             return;
         }
-        for (Permission required : module.getInfo().getBotPermissions()) {
-            if (!botPerms.contains(required)) {
-                ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_BOT);
-                return;
+        if (!botPerms.contains(Permission.ADMINISTRATOR)) {
+            for (Permission required : module.getInfo().getBotPermissions()) {
+                if (!botPerms.contains(required)) {
+                    ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_BOT);
+                    return;
+                }
             }
         }
 

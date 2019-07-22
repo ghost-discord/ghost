@@ -26,8 +26,8 @@ import java.util.List;
  */
 final class SystemUtils {
     static final int BUFFER_SIZE = 8192;
-    static final String USER_AGENT = System.getProperty("java.version") + "/" + "Apache HttpClient 4.5.9";
-    static final Platform PLATFORM = Platform.fromPlatformString(System.getProperty("os.name"));
+    static final String USER_AGENT = "Java " + System.getProperty("java.version") + "/" + "Apache HttpClient 4.5.9";
+    static final Platform PLATFORM = Platform.fromPlatformString(System.getProperty("os.name"), System.getProperty("os.arch"));
     static final String CLASSPATH = System.getProperty("java.class.path");
     static final boolean VERBOSE = "true".equals(System.getenv("BT_VERBOSE"));
 
@@ -266,7 +266,7 @@ final class SystemUtils {
      *
      * @param directory Directory to list files from
      * @throws IllegalArgumentException If the file given is not a directory
-     * @throws IOException If an I/O exception occurs while attempting to list the files
+     * @throws IOException              If an I/O exception occurs while attempting to list the files
      */
     static List<File> listFiles(final File directory) throws IOException {
         if (!directory.isDirectory()) {

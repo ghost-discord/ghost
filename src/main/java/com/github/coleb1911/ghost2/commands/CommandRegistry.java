@@ -74,7 +74,8 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
      */
     Module getCommandInstance(String name) {
         for (Module module : instances) {
-            if (name.equals(module.getInfo().getName())) {
+            ModuleInfo info = module.getInfo();
+            if (name.equals(info.getName()) || info.getAliases().contains(name)) {
                 instances.remove(module);
                 instances.add(createInstance(module.getClass()));
                 return module;

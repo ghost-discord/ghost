@@ -1,12 +1,8 @@
-import com.github.coleb1911.ghost2.commands.CommandRegistry;
-import com.github.coleb1911.ghost2.commands.meta.InvalidModuleException;
-import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+package com.github.coleb1911.ghost2.commands.meta;
+
 import com.github.coleb1911.ghost2.commands.modules.moderation.ModuleKick;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class InvalidModuleExceptionTest {
 

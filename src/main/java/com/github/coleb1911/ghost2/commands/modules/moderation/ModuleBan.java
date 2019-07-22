@@ -20,9 +20,9 @@ public final class ModuleBan extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         //Check for args
-        try{
+        try {
             ctx.getArgs().get(0);
-        } catch(IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             ctx.reply("Please specify a user.");
             return;
         }
@@ -36,7 +36,7 @@ public final class ModuleBan extends Module {
                 }).subscribe())
                 .hasElements()
                 .flatMap(aBoolean -> {
-                    if(!aBoolean) ctx.reply("User not found.");
+                    if (!aBoolean) ctx.reply("User not found.");
                     return Mono.just(aBoolean);
                 })
                 .subscribe();
