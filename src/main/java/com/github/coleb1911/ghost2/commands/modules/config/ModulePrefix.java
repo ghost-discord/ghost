@@ -22,7 +22,7 @@ public final class ModulePrefix extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         // Check for at least one argument
         if (ctx.getArgs().isEmpty()) {
             ctx.reply("You didn't supply a prefix.");
@@ -32,12 +32,14 @@ public final class ModulePrefix extends Module {
         // Get prefix and check length
         String prefix = ctx.getArgs().get(0);
         if (prefix.length() > GuildMeta.PREFIX_LENGTH) {
-            ctx.reply("That prefix is too long. The maximum prefix length is " + GuildMeta.PREFIX_LENGTH +".");
+            ctx.reply("That prefix is too long. The maximum prefix length is " + GuildMeta.PREFIX_LENGTH + ".");
             return;
         }
 
         // Save prefix
-        guildRepo.save(new GuildMeta(ctx.getGuild().getId().asLong(), prefix));
-        ctx.reply("Set prefix to `"+ prefix + "`.");
+        GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElseThrow();
+        meta.setPrefix(prefix);
+        guildRepo.save(meta);
+        ctx.reply("Set prefix to `" + prefix + "`.");
     }
 }

@@ -26,7 +26,7 @@ public final class ModuleConfirm extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         ctx.getSelf().getBasePermissions().subscribe(permissions -> {
             if (permissions.contains(Permission.MANAGE_MESSAGES))
                 ctx.getMessage().delete().subscribe();
@@ -48,7 +48,7 @@ public final class ModuleConfirm extends Module {
                 ctx.replyDirect("You already have " + ctx.getGuild().getName() + "'s base role.");
             }
         } else {
-            ctx.replyDirect("Autorole confirmation is disabled. You have not been given a role.");
+            ctx.replyDirect("Autorole confirmation is disabled. Your roles have not changed.");
         }
     }
 }

@@ -25,7 +25,7 @@ public final class ModuleHelp extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         CommandRegistry registry = Ghost2Application.getApplicationInstance().getDispatcher().getRegistry();
 
         // Single-command help
@@ -40,7 +40,7 @@ public final class ModuleHelp extends Module {
             // Build and send embed
             ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
                 String aliasList;
-                if (info.getAliases().length == 0) {
+                if (info.getAliases().size() == 0) {
                     aliasList = "n/a";
                 } else {
                     StringJoiner joiner = new StringJoiner(", ");

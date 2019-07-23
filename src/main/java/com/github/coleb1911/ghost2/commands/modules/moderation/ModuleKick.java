@@ -21,7 +21,7 @@ public final class ModuleKick extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         // Check for args
         if (ctx.getArgs().isEmpty()) {
             ctx.reply("Please specify a user.");

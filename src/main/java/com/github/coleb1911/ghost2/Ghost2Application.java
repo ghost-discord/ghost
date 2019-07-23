@@ -10,7 +10,6 @@ import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
@@ -35,8 +34,9 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -219,42 +219,49 @@ public class Ghost2Application implements ApplicationRunner {
      * @param client Client object to register listeners on
      */
     private void registerListeners(DiscordClient client) {
-        // Drop guilds we were removed from when offline (if any)
+        // Drop guilds we're no longer in on startup (if any)
+        // Start with a list of IDs of every guild in the database, and remove guilds as we receive them.
+        // Anything remaining is invalid and dropped from the database.
+        // We also add any new guilds here.
+        List<Long> idsToRemove = new ArrayList<>();
+        guildRepo.findAll().forEach(meta -> idsToRemove.add(meta.getId()));
         client.getEventDispatcher().on(ReadyEvent.class)
-                .subscribe(ignore ->
-                        client.getGuilds()
-                                .map(Guild::getId)
-                                .map(Snowflake::asLong)
-                                .filter(((Predicate<Long>) guildRepo::existsById).negate())
-                                .subscribe(guildRepo::deleteById)
-                );
+                .map(event -> event.getGuilds().size())
+                .flatMap(size -> client.getEventDispatcher()
+                        .on(GuildCreateEvent.class)
+                        .take(size)
+                        .collectList())
+                .subscribe(events -> {
+                    // Remove valid guilds from list and add any new guilds
+                    for (GuildCreateEvent event : events) {
+                        Long id = event.getGuild().getId().asLong();
+                        idsToRemove.remove(id);
+                        if (!guildRepo.existsById(id)) {
+                            guildRepo.save(new GuildMeta(id));
+                        }
+                    }
 
-        // Add new guilds to database as they're received
-        client.getEventDispatcher().on(GuildCreateEvent.class)
-                .map(GuildCreateEvent::getGuild)
-                .map(Guild::getId)
-                .map(Snowflake::asLong)
-                .filter(((Predicate<Long>) guildRepo::existsById).negate())
-                .map(id -> new GuildMeta(id, GuildMeta.DEFAULT_PREFIX))
-                .doOnEach(signal -> Logger.debug("Added new guild {} to database", Objects.requireNonNull(signal.get()).getId()))
-                .subscribe(guildRepo::save);
+                    // Remove unreceived guilds
+                    idsToRemove.forEach(guildRepo::deleteById);
+                });
 
         // Drop guilds when we're removed from them
         client.getEventDispatcher().on(GuildDeleteEvent.class)
-                .filter(e -> !e.isUnavailable())
-                .map(GuildDeleteEvent::getGuild)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(Guild::getId)
+                .filter(Predicate.not(GuildDeleteEvent::isUnavailable))
+                .map(GuildDeleteEvent::getGuildId)
                 .map(Snowflake::asLong)
                 .filter(guildRepo::existsById)
-                .doOnEach(signal -> Logger.debug("Removed guild {} from database", signal.get()))
                 .subscribe(guildRepo::deleteById);
 
         // Autorole
         client.getEventDispatcher().on(MemberJoinEvent.class)
                 .subscribe(e -> {
-                    GuildMeta meta = guildRepo.findById(e.getGuildId().asLong()).orElseThrow();
+                    GuildMeta meta = guildRepo.findById(e.getGuildId().asLong()).orElse(null);
+                    if (meta == null) {
+                        Logger.error("MemberJoinEvent guild {} doesn't exist in database");
+                        return;
+                    }
+
                     if (meta.getAutoRoleEnabled() && !meta.getAutoRoleConfirmationEnabled()) {
                         e.getMember().addRole(Snowflake.of(meta.getAutoRoleId()), "Autorole").subscribe();
                         String guildName = Objects.requireNonNull(e.getGuild().block()).getName();
@@ -265,12 +272,7 @@ public class Ghost2Application implements ApplicationRunner {
 
         // Send MessageCreateEvents to CommandDispatcher
         client.getEventDispatcher().on(MessageCreateEvent.class)
-                .filter(e -> {
-                    if (e.getMember().isPresent()) {
-                        return !e.getMember().get().isBot();
-                    }
-                    return false;
-                })
+                .filter(e -> e.getMember().isPresent() && !e.getMember().get().isBot())
                 .subscribe(dispatcher::onMessageEvent);
     }
 }

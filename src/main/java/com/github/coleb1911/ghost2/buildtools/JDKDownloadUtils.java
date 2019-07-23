@@ -27,7 +27,7 @@ import static com.github.coleb1911.ghost2.buildtools.SystemUtils.BUFFER_SIZE;
 import static com.github.coleb1911.ghost2.buildtools.SystemUtils.USER_AGENT;
 
 class JDKDownloadUtils {
-    private static final String URL_FORMAT = "https://api.adoptopenjdk.net/v2/info/releases/openjdk11?openjdk_impl=hotspot&arch=x64&type=jdk&heap_size=normal&release=latest&os=";
+    private static final String URL_FORMAT = "https://api.adoptopenjdk.net/v2/info/releases/openjdk11?openjdk_impl=hotspot&type=jdk&heap_size=normal&release=latest&arch={ARCH}&os={OS}";
 
     /**
      * Download the latest Java 11 JDK for a platform.<br>
@@ -64,7 +64,8 @@ class JDKDownloadUtils {
                 .build()) {
 
             // Make initial link request to AdoptOpenJDK API
-            HttpGet request = new HttpGet(URL_FORMAT + platform.apiName);
+            String requestString = URL_FORMAT.replace("{ARCH}", platform.osArch).replace("{OS}", platform.osName);
+            HttpGet request = new HttpGet(requestString);
             try (CloseableHttpResponse response = client.execute(request)) {
                 // Check status
                 if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -91,17 +92,24 @@ class JDKDownloadUtils {
      * Enum of supported platforms
      */
     public enum Platform {
-        WINDOWS("windows"),
-        LINUX("linux"),
-        OSX("mac");
+        WINDOWS("windows", "x64"),
+        LINUX("linux", "x64"),
+        OSX("mac", "x64"),
+        ARM32("linux", "arm");
 
         /**
          * Name of this platform in the AdoptOpenJDK API
          */
-        private final String apiName;
+        private final String osName;
 
-        Platform(final String apiName) {
-            this.apiName = apiName;
+        /**
+         * Architecture of this platform in the AdoptOpenJDK API
+         */
+        private final String osArch;
+
+        Platform(final String osName, final String osArch) {
+            this.osName = osName;
+            this.osArch = osArch;
         }
 
         /**
@@ -111,10 +119,11 @@ class JDKDownloadUtils {
          * @return Enum value
          * @throws IllegalArgumentException If the platform is unsupported or nonexistent
          */
-        public static Platform fromPlatformString(final String name) {
+        public static Platform fromPlatformString(final String name, final String arch) {
             if (name.startsWith("Windows")) return WINDOWS;
             else if (name.startsWith("Mac")) return OSX;
-            else if (name.contains("Linux")) return LINUX;
+            else if (name.contains("Linux") && arch.contains("amd64")) return LINUX;
+            else if (name.contains("Linux") && arch.contains("arm")) return ARM32;
             throw new IllegalArgumentException("Unsupported or nonexistent platform");
         }
 

@@ -20,7 +20,7 @@ public final class ModulePurge extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         // Check for arguments
         if (ctx.getArgs().isEmpty()) {
             ctx.reply("Please specify a number of messages to purge.");

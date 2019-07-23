@@ -17,7 +17,7 @@ public final class ModuleShutdown extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         ctx.reply("Bye!");
         Ghost2Application.getApplicationInstance().exit(0);
     }

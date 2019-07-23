@@ -7,25 +7,37 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+
+/**
+ * Represents a Guild in ghost2's database.
+ */
 @Entity
 @Table(name = "GUILD_META")
 public class GuildMeta {
-    public static final String DEFAULT_PREFIX = "g!";
     public static final int PREFIX_LENGTH = 6;
-
+    private static final String DEFAULT_PREFIX = "g!";
     @Id
     @Column(name = "ID", unique = true, nullable = false)
     private Long id;
 
+    /**
+     * Defaults to {@value DEFAULT_PREFIX}.
+     */
     @Column(name = "PREFIX", nullable = false, length = PREFIX_LENGTH)
     private String prefix = DEFAULT_PREFIX;
 
     @Column(name = "AUTOROLE")
     private Long autoRoleId;
 
+    /**
+     * Defaults to {@code false}.
+     */
     @Column(name = "AUTOROLE_ENABLED", nullable = false)
     private Boolean autoRoleEnabled = false;
 
+    /**
+     * Defaults to {@code false}.
+     */
     @Column(name = "AUTOROLE_CONFIRMATION_ENABLED", nullable = false)
     private Boolean autoRoleConfirmationEnabled = false;
 
@@ -34,14 +46,13 @@ public class GuildMeta {
     }
 
     /**
-     * Constructs a new GuildMeta.
+     * Constructs a new GuildMeta.<br>
+     * See field JavaDocs for default field values.
      *
-     * @param id     ID of this GuildMeta
-     * @param prefix Prefix of this GuildMeta
+     * @param id Guild ID
      */
-    public GuildMeta(long id, String prefix) {
+    public GuildMeta(long id) {
         this.id = id;
-        this.prefix = prefix;
     }
 
     public Long getId() {
@@ -63,7 +74,6 @@ public class GuildMeta {
     public Long getAutoRoleId() {
         return autoRoleId;
     }
-
 
     public void setAutoRoleId(Long autoRoleId) {
         this.autoRoleId = autoRoleId;

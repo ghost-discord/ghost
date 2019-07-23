@@ -51,6 +51,21 @@ public class InvalidModuleException extends RuntimeException {
     }
 
     /**
+     * Formats the error message.
+     *
+     * @param moduleName The module name
+     * @param reasons    The reasons description. Might contain more than one reason.
+     */
+    private static String formatErrorMessage(String moduleName, String reasons) {
+        return "Module subclass "
+                + moduleName
+                + " is written incorrectly. Refer to the wiki for help. (Reason(s): "
+                + reasons
+                + ")";
+
+    }
+
+    /**
      * @return A {@code String} containing all the messages of each {@code Reason} for this {@code InvalidModuleException}
      */
     private String getReasonsString() {
@@ -64,19 +79,6 @@ public class InvalidModuleException extends RuntimeException {
         return module;
     }
 
-    /**
-     * Formats the error message.
-     * @param moduleName             The module name
-     * @param reasons                The reasons description. Might contain more than one reason.
-     */
-    private static String formatErrorMessage(String moduleName, String reasons){
-        return "Module subclass "
-                + moduleName
-                + " is written incorrectly. Refer to the wiki for help. (Reason(s): "
-                + reasons
-                + ")";
-
-    }
     /**
      * The many causes of an {@code InvalidModuleException}.
      */

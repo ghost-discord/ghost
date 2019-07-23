@@ -5,8 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Contains metadata for a Module.
@@ -21,21 +24,21 @@ import java.util.Set;
  * <li>Command aliases</li>
  * </ul>
  */
-public class ModuleInfo {
+public final class ModuleInfo {
     private final String name;
     private final String description;
     private final PermissionSet botPermissions;
     private final PermissionSet userPermissions;
     private final CommandType type;
-    private final String[] aliases;
+    private final List<String> aliases;
 
     private ModuleInfo(String name, String description, PermissionSet botPermissions, PermissionSet userPermissions, CommandType type, String[] aliases) {
-        this.name = name;
+        this.name = name.toLowerCase();
         this.description = description;
         this.botPermissions = botPermissions;
         this.userPermissions = userPermissions;
         this.type = type;
-        this.aliases = aliases;
+        this.aliases = Arrays.stream(aliases).map(String::toLowerCase).collect(Collectors.toUnmodifiableList());
     }
 
     /**
@@ -74,9 +77,9 @@ public class ModuleInfo {
     }
 
     /**
-     * @return Command aliases
+     * @return Immutable list of aliases
      */
-    public String[] getAliases() {
+    public List<String> getAliases() {
         return aliases;
     }
 

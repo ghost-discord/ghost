@@ -45,7 +45,7 @@ public abstract class Module {
      *
      * @param ctx Command context. <b>Cannot be null.</b>
      */
-    public abstract void invoke(@NotNull CommandContext ctx);
+    public abstract void invoke(@NotNull final CommandContext ctx);
 
     @Override
     public boolean equals(Object other) {

@@ -14,6 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.validation.constraints.NotNull;
 
 public final class ModuleAutoRole extends Module {
+    private static final String REPLY_INVALID_ARGS = "Please specify a role, `enable`, `disable`, or `requireconfirmation [true/false]`.";
+    private static final String REPLY_INVALID_CONFIRM_SETTING = "Please specify \'true\' or \'false\' to enable or disable autorole confirmation.";
+
+    private static final String ARG_ENABLE = "enable";
+    private static final String ARG_DISABLE = "disable";
+    private static final String ARG_SET_CONFIRM_ENABLED = "requireconfirmation";
+
+    private static final String SETTING_TRUE = "true";
+    private static final String SETTING_FALSE = "false";
+
     @Autowired GuildMetaRepository guildRepo;
 
     @ReflectiveAccess
@@ -24,68 +34,130 @@ public final class ModuleAutoRole extends Module {
                 .withUserPermissions(PermissionSet.of(Permission.MANAGE_ROLES)));
     }
 
+    /**
+     * Enables role confirmation with {@code g!confirm}.
+     *
+     * @param ctx  Command context from {@code invoke}
+     * @param meta {@link GuildMeta} from {@code invoke}
+     */
+    private static void enableConfirmation(final CommandContext ctx, final GuildMeta meta) {
+        if (meta.getAutoRoleConfirmationEnabled()) {
+            ctx.reply("Autorole confirmation is already enabled.");
+            return;
+        }
+        meta.setAutoRoleConfirmationEnabled(true);
+        ctx.reply("Autorole confirmation enabled.");
+    }
+
+    /**
+     * Disables role confirmation with {@code g!confirm}.
+     *
+     * @param ctx  Command context from {@code invoke}
+     * @param meta {@link GuildMeta} from {@code invoke}
+     */
+    private static void disableConfirmation(final CommandContext ctx, final GuildMeta meta) {
+        if (!meta.getAutoRoleConfirmationEnabled()) {
+            ctx.reply("Autorole confirmation is already disabled.");
+            return;
+        }
+        meta.setAutoRoleConfirmationEnabled(false);
+        ctx.reply("Autorole confirmation disabled.");
+    }
+
+    /**
+     * Set the role for autorole.
+     *
+     * @param ctx  Command context from {@code invoke}
+     * @param meta {@link GuildMeta} from {@code invoke}
+     */
+    private static void setRole(final CommandContext ctx, final GuildMeta meta) {
+        Role role = ctx.getRoleMentions().get(0);
+        Role highest = ctx.getSelf().getHighestRole().block();
+
+        if (highest == null || role.getRawPosition() > highest.getRawPosition()) {
+            ctx.reply("That role is higher than my highest role. I can't use it.");
+            return;
+        }
+
+        meta.setAutoRoleId(role.getId().asLong());
+        ctx.reply("Autorole set to " + role.getMention() + ".");
+    }
+
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    public void invoke(@NotNull final CommandContext ctx) {
         // Check for arguments
         if (ctx.getArgs().isEmpty() || ctx.getMessage().mentionsEveryone()) {
-            ctx.reply("Please specify a role, `enable`, `disable`, or `requireconfirmation [true/false]`.");
+            ctx.reply(REPLY_INVALID_ARGS);
             return;
         }
 
         GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElseThrow();
 
-        String arg0 = ctx.getArgs().get(0);
-        if ("enable".equals(arg0)) {
-            if (meta.getAutoRoleId() == null) {
-                ctx.reply("Please set a role for autorole before enabling it.");
-                return;
-            }
-            if (meta.getAutoRoleEnabled()) {
-                ctx.reply("Autorole is already enabled.");
-                return;
-            }
-            meta.setAutoRoleEnabled(true);
-            ctx.reply("Autorole enabled.");
-        } else if ("disable".equals(arg0)) {
-            if (!meta.getAutoRoleEnabled()) {
-                ctx.reply("Autorole is already disabled.");
-                return;
-            }
-            meta.setAutoRoleEnabled(false);
-            ctx.reply("Autorole disabled.");
-        } else if ("requireconfirmation".equals(arg0)) {
-            if (ctx.getArgs().size() < 2) {
-                ctx.reply("Please specify \'true\' or \'false\' to enable or disable autorole confirmation.");
-                return;
-            }
-
-            String arg1 = ctx.getArgs().get(1);
-            if ("true".equals(arg1)) {
-                if (meta.getAutoRoleConfirmationEnabled()) {
-                    ctx.reply("Autorole confirmation is already enabled.");
+        switch (ctx.getArgs().get(0)) {
+            case ARG_ENABLE:
+                enableAutoRole(ctx, meta);
+                break;
+            case ARG_DISABLE:
+                disableAutoRole(ctx, meta);
+                break;
+            case ARG_SET_CONFIRM_ENABLED:
+                if (ctx.getArgs().size() < 2) {
+                    ctx.reply(REPLY_INVALID_CONFIRM_SETTING);
                     return;
                 }
-                meta.setAutoRoleConfirmationEnabled(true);
-                ctx.reply("Autorole confirmation enabled.");
-            } else if ("false".equals(arg1)) {
-                if (!meta.getAutoRoleConfirmationEnabled()) {
-                    ctx.reply("Autorole confirmation is already disabled.");
-                    return;
+                switch (ctx.getArgs().get(1)) {
+                    case SETTING_TRUE:
+                        enableConfirmation(ctx, meta);
+                        break;
+                    case SETTING_FALSE:
+                        disableConfirmation(ctx, meta);
+                        break;
+                    default:
+                        ctx.reply(REPLY_INVALID_CONFIRM_SETTING);
+                        break;
                 }
-                meta.setAutoRoleConfirmationEnabled(false);
-                ctx.reply("Autorole confirmation disabled.");
-            }
-        } else if (!ctx.getRoleMentions().isEmpty()) {
-            Role role = ctx.getRoleMentions().get(0);
-            Role highest = ctx.getSelf().getHighestRole().block();
-            if (null == highest || role.getRawPosition() > highest.getRawPosition()) {
-                ctx.reply("That role is higher than my highest role. I can't use it.");
-                return;
-            }
-            meta.setAutoRoleId(role.getId().asLong());
-            ctx.reply("Autorole set to " + role.getMention() + ".");
+                break;
+            default:
+                if (!ctx.getRoleMentions().isEmpty()) {
+                    setRole(ctx, meta);
+                }
         }
 
         guildRepo.save(meta);
+    }
+
+    /**
+     * Enables autorole entirely.
+     *
+     * @param ctx  Command context from {@code invoke}
+     * @param meta {@link GuildMeta} from {@code invoke}
+     */
+    private void enableAutoRole(final CommandContext ctx, final GuildMeta meta) {
+        if (meta.getAutoRoleId() == null) {
+            ctx.reply("Please set a role for autorole before enabling it.");
+            return;
+        }
+
+        if (meta.getAutoRoleEnabled()) {
+            ctx.reply("Autorole is already enabled.");
+            return;
+        }
+        meta.setAutoRoleEnabled(true);
+        ctx.reply("Autorole enabled.");
+    }
+
+    /**
+     * Disables autorole entirely.
+     *
+     * @param ctx  Command context from {@code invoke}
+     * @param meta {@link GuildMeta} from {@code invoke}
+     */
+    private void disableAutoRole(final CommandContext ctx, final GuildMeta meta) {
+        if (!meta.getAutoRoleEnabled()) {
+            ctx.reply("Autorole is already disabled.");
+            return;
+        }
+        meta.setAutoRoleEnabled(false);
+        ctx.reply("Autorole disabled.");
     }
 }
