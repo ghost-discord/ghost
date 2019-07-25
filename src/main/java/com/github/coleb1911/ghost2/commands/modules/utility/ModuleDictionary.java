@@ -76,7 +76,9 @@ public final class ModuleDictionary extends Module {
         String urlTemplate = "https://api.datamuse.com/words?sp=%s&max=1&md=d";
         String url = urlTemplate.replaceAll("%s", word);
 
-        ResponseEntity<List<ResponseObject>> responseEntity = restTemplate.exchange(URI.create(url), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+        //Redundant type parameter is necessary to circumvent bug JDK-8212586 (fixed in OpenJDK 12)
+        @SuppressWarnings("Convert2Diamond")
+        ResponseEntity<List<ResponseObject>> responseEntity = restTemplate.exchange(URI.create(url), HttpMethod.GET, null, new ParameterizedTypeReference<List<ResponseObject>>() {});
         List<ResponseObject> responseObjects = responseEntity.getBody();
         if (responseObjects == null || responseObjects.size() == 0) return voidConsumer;
         ResponseObject responseObject = responseObjects.get(0);
