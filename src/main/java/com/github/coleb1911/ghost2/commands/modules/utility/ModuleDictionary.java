@@ -8,12 +8,10 @@ import discord4j.core.spec.EmbedCreateSpec;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
-import java.lang.reflect.Type;
-import java.time.Instant;
+import java.net.URI;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
@@ -28,7 +26,8 @@ Example response: [{"word":"paradigm","score":133798,"defs":["n\tthe generally a
 public final class ModuleDictionary extends Module {
     final private String TOO_MANY_WORDS_ERROR_STRING = "I can only define one word at a time. Please retry.";
     final private String CALLED_WITH_ZERO_WORDS_ERROR_STRING = "Please enter a word to define.";
-    final private RestTemplate restTemplate = new RestTemplate();
+
+    private RestTemplate restTemplate = new RestTemplate();
 
     @ReflectiveAccess
     public ModuleDictionary() {
@@ -75,12 +74,9 @@ public final class ModuleDictionary extends Module {
         String urlTemplate = "https://api.datamuse.com/words?sp=%s&max=1&md=d";
         String url = urlTemplate.replaceAll("%s", word);
 
-        //responseObject = restTemplate.getForObject(url, ResponseObject.class);
-        ResponseEntity<List<ResponseObject>> responseEntity = restTemplate.exchange(
-                url, HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-                });
+        ResponseEntity<List<ResponseObject>> responseEntity = restTemplate.exchange(URI.create(url), HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
         List<ResponseObject> responseObjects = responseEntity.getBody();
-        if (responseObjects.size() == 0) return voidConsumer;
+        if (responseObjects == null || responseObjects.size() == 0) return voidConsumer;
         ResponseObject responseObject = responseObjects.get(0);
         if (responseObject == null) {
             return voidConsumer;
