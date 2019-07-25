@@ -76,7 +76,8 @@ public final class ModuleDictionary extends Module {
         String urlTemplate = "https://api.datamuse.com/words?sp=%s&max=1&md=d";
         String url = urlTemplate.replaceAll("%s", word);
 
-        //Redundant type parameter is necessary to circumvent bug JDK-8212586 (fixed in OpenJDK 12)
+        //Redundant type parameter is necessary to circumvent bug JDK-8212586 (fix backported to OpenJDK 11.0.4,
+        //but Travis CI uses 11.0.2)
         @SuppressWarnings("Convert2Diamond")
         ResponseEntity<List<ResponseObject>> responseEntity = restTemplate.exchange(URI.create(url), HttpMethod.GET, null, new ParameterizedTypeReference<List<ResponseObject>>() {});
         List<ResponseObject> responseObjects = responseEntity.getBody();
