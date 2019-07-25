@@ -113,7 +113,7 @@ public final class ModuleDictionary extends Module {
             }
 
             embedCreateSpec.setDescription(joiner.toString());
-            //for some reason, setFooter won't markdown... maybe a bug in the library?
+            //Discord API does not support markdown in footers
             embedCreateSpec.setFooter("Taken from Datamuse.com", null);
         };
     }
