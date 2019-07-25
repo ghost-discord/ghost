@@ -1,5 +1,6 @@
 package com.github.coleb1911.ghost2.commands.modules.utility;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
@@ -111,5 +113,43 @@ public final class ModuleDictionary extends Module {
             //for some reason, setFooter won't markdown... maybe a bug in the library?
             embedCreateSpec.setFooter("Taken from Datamuse.com", null);
         };
+    }
+
+    /**
+     * A POJO representing the response from the Rest API
+     */
+    @Generated("com.robohorse.robopojogenerator")
+    private static class ResponseObject {
+
+        @JsonProperty("defs")
+        private List<String> defs;
+
+        @JsonProperty("word")
+        private String word;
+
+        public void setDefs(List<String> defs) {
+            this.defs = defs;
+        }
+
+        public List<String> getDefs() {
+            return defs;
+        }
+
+        public void setWord(String word) {
+            this.word = word;
+        }
+
+        public String getWord() {
+            return word;
+        }
+
+        @Override
+        public String toString() {
+            return
+                    "ResponseObject{" +
+                            "defs = '" + defs + '\'' +
+                            ",word = '" + word + '\'' +
+                            "}";
+        }
     }
 }
