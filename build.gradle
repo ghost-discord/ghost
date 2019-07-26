@@ -25,8 +25,11 @@ dependencies {
     }
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
 
-    //Spring Web for consuming REST APIs
-    implementation group: 'org.springframework.data', name: 'spring-data-rest-webmvc', version: '2.1.6.RELEASE'
+    // Spring Web for consuming REST APIs
+    // Logging framework is, again, excluded to avoid conflict
+    implementation (group: 'org.springframework.data', name: 'spring-data-rest-webmvc', version: '2.1.6.RELEASE') {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
+    }
 
     // Other libraries & APIs
     implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.0.7'
