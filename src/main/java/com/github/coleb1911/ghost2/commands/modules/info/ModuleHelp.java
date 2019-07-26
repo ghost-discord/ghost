@@ -1,18 +1,29 @@
 package com.github.coleb1911.ghost2.commands.modules.info;
 
-import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.commands.CommandRegistry;
+import com.github.coleb1911.ghost2.commands.meta.CommandContext;
+import com.github.coleb1911.ghost2.commands.meta.CommandType;
 import com.github.coleb1911.ghost2.commands.meta.Module;
-import com.github.coleb1911.ghost2.commands.meta.*;
+import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+/**
+ * @author cbryant02
+ * @author LeMikaelF
+ */
 public final class ModuleHelp extends Module {
 
-    private CommandRegistry registry;
+    @Autowired private CommandRegistry registry;
 
     @ReflectiveAccess
     public ModuleHelp() {
@@ -23,9 +34,6 @@ public final class ModuleHelp extends Module {
 
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
-        //We cannot initialize the command registry earlier.
-        initializeRegistry();
-
         if (ctx.getArgs().size() > 0) {
             singleCommandHelp(ctx);
         } else {
@@ -36,7 +44,7 @@ public final class ModuleHelp extends Module {
     /**
      * Sends a message detailing a single command, or an error message if the command is invalid.
      *
-     * @param ctx The `CommandContext` to publish on.
+     * @param ctx The {@code CommandContext} to publish on.
      */
     private void singleCommandHelp(@NotNull CommandContext ctx) {
         // Fetch & null-check CommandInfo
@@ -61,59 +69,58 @@ public final class ModuleHelp extends Module {
 
 
     /**
-     * Sends a message with a formatted embed enumerating all the commands in their respective `CommandType`.
+     * Sends a message with a formatted embed enumerating all the commands in their respective {@code CommandType}.
      *
-     * @param ctx The `CommandContext` to publish on.
+     * @param ctx The {@code CommandContext} to publish on.
      */
     private void fullCommandList(@NotNull CommandContext ctx) {
-
-        // Build and send embed
         ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
             embedSpec.setTitle("Help");
-            embedSpec.setAuthor(ctx.getSelf().getUsername(), null, ctx.getSelf().getAvatarUrl());
-            embedSpec.setFooter("See g!help <command> for help with specific commands", null);
-            embedSpec.setTimestamp(Instant.now());
+            embedSpec.setFooter("See help <command> for help with specific commands", null);
 
-            for (Map.Entry<CommandType, List<ModuleInfo>> module : getCommandTypeToModuleInfoMap().entrySet()) {
-                List<String> names = module.getValue().stream().map(ModuleInfo::getName).collect(Collectors.toList());
+            for (Map.Entry<CommandType, List<ModuleInfo>> module : categorizeModules().entrySet()) {
+                List<String> names = module.getValue().stream()
+                        .map(ModuleInfo::getName)
+                        .collect(Collectors.toList());
+
+                CommandType type = module.getKey();
                 String commandList = getFormattedListString("`", "`, `", "`", names)
                         .orElse("No commands (...yet)");
 
-                CommandType type = module.getKey();
                 embedSpec.addField(type.getIcon() + " " + type.getFormattedName(), commandList, false);
             }
         })).block();
     }
 
 
-
     /**
-     * Takes a list of `String`, and if they're empty, returns an empty `String`. If not, returns a `String` beginning
-     * with the `before` `String`, intercalates the values with the `between` `String`, and appends the `after` `String`
-     * at the end.
+     * Takes a list of {@link String Strings}, and if it's empty, returns an empty {@code String}. If not, returns a
+     * {@code String} beginning with {@code before}, delimits the values with {@code between}, and appends
+     * {@code after} at the end.
      *
-     * @param before  A `String` to prepend to the result.
-     * @param between A `String` to intercalate between the list elements (ex.: ", ").
-     * @param after   A `String` to append to the result.
-     * @param values  The values to be displayed.
+     * @param prefix    A {@code String} to prepend to the result.
+     * @param delimiter A {@code String} to insert between the list elements (ex.: ", ").
+     * @param suffix    A {@code String} to append to the result.
+     * @param values    The values to be displayed.
      * @return A formatted string
      */
-    private Optional<String> getFormattedListString(String before, String between, String after, List<String> values) {
+    private Optional<String> getFormattedListString(String prefix, String delimiter, String suffix, List<String> values) {
         if (values.isEmpty()) return Optional.empty();
-        StringJoiner joiner = new StringJoiner(between);
+
+        StringJoiner joiner = new StringJoiner(delimiter, prefix, suffix);
         for (String value : values) {
             joiner.add(value);
         }
 
-        return Optional.of(before + joiner + after);
+        return Optional.of(joiner.toString());
     }
 
     /**
      * Categorizes all available modules.
      *
-     * @return A map of all available sorts of `CommandType` and their corresponding `ModuleInfo`.
+     * @return A map of all available sorts of {@link CommandType} and their corresponding {@link ModuleInfo}.
      */
-    private Map<CommandType, List<ModuleInfo>> getCommandTypeToModuleInfoMap() {
+    private Map<CommandType, List<ModuleInfo>> categorizeModules() {
         Map<CommandType, List<ModuleInfo>> modules = new LinkedHashMap<>();
 
         for (CommandType type : CommandType.values()) {
@@ -124,14 +131,5 @@ public final class ModuleHelp extends Module {
         }
 
         return modules;
-    }
-
-    /**
-     * Initializes the `CommandRegistry` the first time it is called.
-     */
-    private void initializeRegistry() {
-        if (registry == null) {
-            registry = Ghost2Application.getApplicationInstance().getDispatcher().getRegistry();
-        }
     }
 }
