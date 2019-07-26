@@ -19,4 +19,8 @@ open module ghost2.main {
     requires tinylog;
     requires owner;
     requires reflections;
+    requires jackson.annotations;
+    requires java.annotation;
+    requires spring.web;
+    requires spring.core;
 }
