@@ -50,7 +50,8 @@ public final class ModuleHelp extends Module {
 
             for (Map.Entry<CommandType, List<ModuleInfo>> module : getCommandTypeToModuleInfoMap().entrySet()) {
                 List<String> names = module.getValue().stream().map(ModuleInfo::getName).collect(Collectors.toList());
-                String commandList = getFormattedListString("No commands (...yet)", "`", "`, `", "`", names);
+                String commandList = getFormattedListString("`", "`, `", "`", names)
+                        .orElse("No commands (...yet)");
 
                 CommandType type = module.getKey();
                 embedSpec.addField(type.getIcon() + " " + type.getFormattedName(), commandList, false);
@@ -92,7 +93,8 @@ public final class ModuleHelp extends Module {
 
         // Build and send embed
         ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
-            String aliasesString = getFormattedListString("n/a", "", ", ", "", info.getAliases());
+            String aliasesString = getFormattedListString("", ", ", "", info.getAliases())
+                    .orElse("n/a");
 
             embedSpec.setTitle("Command help");
             embedSpec.addField("Name", info.getName(), false);
@@ -104,35 +106,24 @@ public final class ModuleHelp extends Module {
 
 
     /**
-     * Takes a list of `String`, and if they're empty, returns the `empty` `String`. If not, returns a `String` beginning
+     * Takes a list of `String`, and if they're empty, returns an empty `String`. If not, returns a `String` beginning
      * with the `before` `String`, intercalates the values with the `between` `String`, and appends the `after` `String`
      * at the end.
      *
-     * @param empty   The `String` to be returned when the list of values is empty.
      * @param before  A `String` to prepend to the result.
      * @param between A `String` to intercalate between the list elements (ex.: ", ").
      * @param after   A `String` to append to the result.
      * @param values  The values to be displayed.
      * @return A formatted string
      */
-    private String getFormattedListString(String empty, String before,
-                                          String between, String after, List<String> values) {
-        StringBuilder result = new StringBuilder();
-
-        if (values.isEmpty()) {
-            result = new StringBuilder(empty);
-        } else {
-            result.append(before);
-
-            StringJoiner joiner = new StringJoiner(between);
-            for (String value : values) {
-                joiner.add(value);
-            }
-
-            result.append(joiner);
-            result.append(after);
+    private Optional<String> getFormattedListString(String before, String between, String after, List<String> values) {
+        if (values.isEmpty()) return Optional.empty();
+        StringJoiner joiner = new StringJoiner(between);
+        for (String value : values) {
+            joiner.add(value);
         }
-        return result.toString();
+
+        return Optional.of(before + joiner + after);
     }
 
     /**
