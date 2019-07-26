@@ -33,51 +33,6 @@ public final class ModuleHelp extends Module {
         }
     }
 
-
-    /**
-     * Sends a message with a formatted embed enumerating all the commands in their respective `CommandType`.
-     *
-     * @param ctx The `CommandContext` to publish on.
-     */
-    private void fullCommandList(@NotNull CommandContext ctx) {
-
-        // Build and send embed
-        ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
-            embedSpec.setTitle("Help");
-            embedSpec.setAuthor(ctx.getSelf().getUsername(), null, ctx.getSelf().getAvatarUrl());
-            embedSpec.setFooter("See g!help <command> for help with specific commands", null);
-            embedSpec.setTimestamp(Instant.now());
-
-            for (Map.Entry<CommandType, List<ModuleInfo>> module : getCommandTypeToModuleInfoMap().entrySet()) {
-                List<String> names = module.getValue().stream().map(ModuleInfo::getName).collect(Collectors.toList());
-                String commandList = getFormattedListString("`", "`, `", "`", names)
-                        .orElse("No commands (...yet)");
-
-                CommandType type = module.getKey();
-                embedSpec.addField(type.getIcon() + " " + type.getFormattedName(), commandList, false);
-            }
-        })).block();
-    }
-
-
-    /**
-     * Categorizes all available modules.
-     *
-     * @return A map of all available sorts of `CommandType` and their corresponding `ModuleInfo`.
-     */
-    private Map<CommandType, List<ModuleInfo>> getCommandTypeToModuleInfoMap() {
-        Map<CommandType, List<ModuleInfo>> modules = new LinkedHashMap<>();
-
-        for (CommandType type : CommandType.values()) {
-            modules.put(type, new ArrayList<>());
-        }
-        for (ModuleInfo info : registry.getAllInfo()) {
-            modules.get(info.getType()).add(info);
-        }
-
-        return modules;
-    }
-
     /**
      * Sends a message detailing a single command, or an error message if the command is invalid.
      *
@@ -106,6 +61,33 @@ public final class ModuleHelp extends Module {
 
 
     /**
+     * Sends a message with a formatted embed enumerating all the commands in their respective `CommandType`.
+     *
+     * @param ctx The `CommandContext` to publish on.
+     */
+    private void fullCommandList(@NotNull CommandContext ctx) {
+
+        // Build and send embed
+        ctx.getChannel().createMessage(messageSpec -> messageSpec.setEmbed(embedSpec -> {
+            embedSpec.setTitle("Help");
+            embedSpec.setAuthor(ctx.getSelf().getUsername(), null, ctx.getSelf().getAvatarUrl());
+            embedSpec.setFooter("See g!help <command> for help with specific commands", null);
+            embedSpec.setTimestamp(Instant.now());
+
+            for (Map.Entry<CommandType, List<ModuleInfo>> module : getCommandTypeToModuleInfoMap().entrySet()) {
+                List<String> names = module.getValue().stream().map(ModuleInfo::getName).collect(Collectors.toList());
+                String commandList = getFormattedListString("`", "`, `", "`", names)
+                        .orElse("No commands (...yet)");
+
+                CommandType type = module.getKey();
+                embedSpec.addField(type.getIcon() + " " + type.getFormattedName(), commandList, false);
+            }
+        })).block();
+    }
+
+
+
+    /**
      * Takes a list of `String`, and if they're empty, returns an empty `String`. If not, returns a `String` beginning
      * with the `before` `String`, intercalates the values with the `between` `String`, and appends the `after` `String`
      * at the end.
@@ -124,6 +106,24 @@ public final class ModuleHelp extends Module {
         }
 
         return Optional.of(before + joiner + after);
+    }
+
+    /**
+     * Categorizes all available modules.
+     *
+     * @return A map of all available sorts of `CommandType` and their corresponding `ModuleInfo`.
+     */
+    private Map<CommandType, List<ModuleInfo>> getCommandTypeToModuleInfoMap() {
+        Map<CommandType, List<ModuleInfo>> modules = new LinkedHashMap<>();
+
+        for (CommandType type : CommandType.values()) {
+            modules.put(type, new ArrayList<>());
+        }
+        for (ModuleInfo info : registry.getAllInfo()) {
+            modules.get(info.getType()).add(info);
+        }
+
+        return modules;
     }
 
     /**
