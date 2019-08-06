@@ -23,6 +23,13 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This class uses the IBM Watson translator API. It requires an API key (available through https://www.ibm.com/watson/services/language-translator/), and is free up to 1 million characters (over 300 pages) per month.
+ *
+ * It reads from two properties in ghost.properties:
+ * - ibmwatsontranslator.key is the API Key.
+ * - ibmwatsontranslator.url is the endpoint URL, which can be found in the same page as the API Key.
+ */
 final public class ModuleTranslate extends Module {
 
     private static final String INVALID_INPUT_STRING = "Invalid input. See help for more details.";
