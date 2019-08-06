@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final public class ModuleTranslator extends Module {
+final public class ModuleTranslate extends Module {
 
     private static final String INVALID_INPUT_STRING = "Invalid input. See help for more details.";
     //Since IBM Watson only takes 2-letter language codes, perform basic validation.
@@ -46,8 +46,8 @@ final public class ModuleTranslator extends Module {
     private String API_KEY;
 
     @ReflectiveAccess
-    public ModuleTranslator() {
-        super(new ModuleInfo.Builder(ModuleTranslator.class)
+    public ModuleTranslate() {
+        super(new ModuleInfo.Builder(ModuleTranslate.class)
                 .withName("translate")
                 .withDescription(DESCRIPTION));
     }
