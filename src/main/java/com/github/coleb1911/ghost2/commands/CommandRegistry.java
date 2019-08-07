@@ -16,10 +16,11 @@ import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Scans the {@link com.github.coleb1911.ghost2.commands commands} package for valid command {@link Module}s
@@ -41,9 +42,9 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
     private AutowireCapableBeanFactory factory;
 
     @ReflectiveAccess
-    CommandRegistry() {
+    public CommandRegistry() {
         // Instantiate lists
-        instances = new LinkedList<>();
+        instances = new ArrayList<>();
         invalidModules = new LinkedHashSet<>();
 
         // Find all Modules
@@ -101,16 +102,16 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
     }
 
     /**
-     * Get the {@link ModuleInfo} for every {@link Module} found on the classpath
+     * Get the {@link ModuleInfo} for every {@link Module} found on the classpath.
+     * The {@code ModuleInfo} objects are sorted alphabetically by name.
      *
-     * @return Associated CommandInfo for all available Modules
+     * @return Associated ModuleInfo for all available Modules
      */
     public List<ModuleInfo> getAllInfo() {
-        List<ModuleInfo> ret = new ArrayList<>();
-        for (Module module : instances) {
-            ret.add(module.getInfo());
-        }
-        return ret;
+        return instances.stream()
+                .map(Module::getInfo)
+                .sorted(Comparator.comparing(ModuleInfo::getName))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     /**

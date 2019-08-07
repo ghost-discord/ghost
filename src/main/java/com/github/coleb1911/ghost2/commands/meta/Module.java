@@ -17,8 +17,8 @@ import javax.validation.constraints.NotNull;
 public abstract class Module {
     public static final String REPLY_INSUFFICIENT_PERMISSIONS_USER = "You don't have permission to run that command.";
     public static final String REPLY_INSUFFICIENT_PERMISSIONS_BOT = "I don't have sufficient permissions to run that command.";
-    public static final String REPLY_COMMAND_INVALID = "That command doesn't exist. See \'g!help\' for a list of valid commands and their arguments.";
-    public static final String REPLY_ARGUMENT_INVALID = "Invalid argument. See \'g!help\' for a list of valid commands and their arguments.";
+    public static final String REPLY_COMMAND_INVALID = "That command doesn't exist. See `help` for a list of valid commands and their arguments.";
+    public static final String REPLY_ARGUMENT_INVALID = "Invalid argument. See `help` for a list of valid commands and their arguments.";
     public static final String REPLY_GENERAL_ERROR = "Whoops! An error occurred somewhere along the line. My operator has been notified.";
 
     private final ModuleInfo info;
