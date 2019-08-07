@@ -13,12 +13,20 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,12 +39,11 @@ import java.util.regex.Pattern;
  * - ibmwatsontranslator.url is the endpoint URL, which can be found in the same page as the API Key.
  */
 final public class ModuleTranslate extends Module {
-
-    private static final String INVALID_INPUT_STRING = "Invalid input. See help for more details.";
+    private static final String REPLY_INVALID_INPUT = "Invalid input. See help for more details.";
     //Since IBM Watson only takes 2-letter language codes, perform basic validation.
-    static private final String DEFAULT_LANG_CODE =
+    private static final String DEFAULT_LANG_CODE =
             Locale.getDefault().getISO3Language().length() == 2 ? Locale.getDefault().getISO3Language() : "en";
-    static private final String DESCRIPTION =
+    private static final String DESCRIPTION =
             "Translates a word or an expression.\n" +
                     "**Ex**.: \"fr ¡Buenas noches! from:es\" will translate \"¡Buenas noches!\" from Spanish to French.\n" +
                     "If no \"from\" language is specified, " +
@@ -84,7 +91,7 @@ final public class ModuleTranslate extends Module {
     }
 
     private void postInvalidInputMessage(CommandContext ctx) {
-        ctx.getChannel().createMessage(INVALID_INPUT_STRING).block();
+        ctx.getChannel().createMessage(REPLY_INVALID_INPUT).block();
     }
 
     private void postNoTranslationMessage(CommandContext ctx, String phrase) {
