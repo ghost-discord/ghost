@@ -74,7 +74,7 @@ compileJava {
     inputs.property("moduleName", "ghost2.main")
     doFirst {
         options.compilerArgs = [
-            '--module-path', classpath.asPath
+                '--module-path', classpath.asPath
         ]
         classpath = files()
     }
@@ -90,7 +90,7 @@ javadoc {
 }
 
 buildScan {
-	termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
     termsOfServiceAgree = 'yes'
 }
 

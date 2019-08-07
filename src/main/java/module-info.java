@@ -23,4 +23,6 @@ open module ghost2.main {
     requires java.annotation;
     requires spring.web;
     requires spring.core;
+    requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.core;
 }
