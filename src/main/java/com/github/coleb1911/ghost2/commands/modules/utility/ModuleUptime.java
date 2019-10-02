@@ -11,13 +11,13 @@ import javax.validation.constraints.NotNull;
 public final class ModuleUptime extends Module {
     @ReflectiveAccess
     public ModuleUptime() {
-        super(new ModuleInfo.Builder(ModulePing.class)
+        super(new ModuleInfo.Builder(ModuleUptime.class)
                 .withName("uptime")
                 .withDescription("Returns the bot uptime"));
     }
 
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
-        ctx.reply(Ghost2Application.getApplicationInstance().getUptime() +" ms");
+        ctx.reply(Ghost2Application.getApplicationInstance().getFormattedUptime());
     }
 }
