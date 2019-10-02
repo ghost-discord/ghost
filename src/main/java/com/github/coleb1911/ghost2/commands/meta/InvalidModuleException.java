@@ -27,7 +27,7 @@ public class InvalidModuleException extends RuntimeException {
      * @param module  The Module that caused the exception
      * @param reasons Set of Reasons for the exception
      */
-    public InvalidModuleException(Class<? extends Module> module, Set<Reason> reasons) {
+    InvalidModuleException(Class<? extends Module> module, Set<Reason> reasons) {
         super(formatErrorMessage(module.getName(), Reason.concat(reasons)));
         this.module = module;
         this.reasons = reasons;

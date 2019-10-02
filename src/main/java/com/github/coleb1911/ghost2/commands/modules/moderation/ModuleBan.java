@@ -19,10 +19,7 @@ public final class ModuleBan extends Module {
 
     @Override
     public void invoke(@NotNull CommandContext ctx) {
-        //Check for args
-        try {
-            ctx.getArgs().get(0);
-        } catch (IndexOutOfBoundsException e) {
+        if(ctx.getArgs().isEmpty()) {
             ctx.reply("Please specify a user.");
             return;
         }

@@ -42,9 +42,7 @@ import java.util.function.Predicate;
 /**
  * Application entry point
  */
-@ComponentScan
 @SpringBootApplication
-@EnableAutoConfiguration
 @EnableJpaRepositories("com.github.coleb1911.ghost2.database.repos")
 public class Ghost2Application implements ApplicationRunner {
     private static final String MESSAGE_SET_OPERATOR = "No operator has been set for this bot instance. Use the \'claimoperator\' command to set one; until then, operator commands won't work.";
@@ -54,14 +52,20 @@ public class Ghost2Application implements ApplicationRunner {
     private static Ghost2Application applicationInstance;
     private final long startTimeInMillis = System.currentTimeMillis();
 
-    @Autowired private ApplicationContext ctx;
-    @Autowired private CommandDispatcher dispatcher;
-    @Autowired private GuildMetaRepository guildRepo;
+    private final ApplicationContext ctx;
+    private final CommandDispatcher dispatcher;
+    private final GuildMetaRepository guildRepo;
     private DiscordClient client;
     private GhostConfig config;
     private RandomAccessFile lockFile;
     private FileLock lock;
     private long operatorId;
+
+    public Ghost2Application(ApplicationContext ctx, CommandDispatcher dispatcher, GuildMetaRepository guildRepo) {
+        this.ctx = ctx;
+        this.dispatcher = dispatcher;
+        this.guildRepo = guildRepo;
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(Ghost2Application.class, args);
