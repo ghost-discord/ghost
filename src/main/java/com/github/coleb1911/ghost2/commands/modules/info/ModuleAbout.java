@@ -14,7 +14,7 @@ import java.time.Instant;
 public final class ModuleAbout extends Module {
     private static final String GITHUB_URL = "https://github.com/cbryant02/ghost2";
     private static final String FLAVOR_TEXT = "Want to help contribute? Visit our GitHub: " + GITHUB_URL + "\n" +
-            "You can also report bugs there by opening an issue, or by messaging yaboired#8927.";
+            "You can also report bugs there by opening an issue, or by messaging @yaboired#8927.";
     private static final String FIELD_ID = "\uD83C\uDD94 My ID";
     private static final String FIELD_TAG = "\u0023\u20E3 My tag";
     private static final String FIELD_SERVER_TIME = "\u23F1 Time in this server";

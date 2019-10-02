@@ -1,4 +1,4 @@
-open module ghost2.main {
+open module ghosttwo.main {
     requires java.persistence;
     requires java.validation;
     requires spring.boot;
