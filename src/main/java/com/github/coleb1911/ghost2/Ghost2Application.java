@@ -52,6 +52,7 @@ public class Ghost2Application implements ApplicationRunner {
     private static final String ERROR_CONFIG = "ghost.properties is missing or does not contain a bot token. Read ghost2's README for info on how to set up the bot.";
 
     private static Ghost2Application applicationInstance;
+    private final long startTimeInMillis = System.currentTimeMillis();
 
     @Autowired private ApplicationContext ctx;
     @Autowired private CommandDispatcher dispatcher;
@@ -211,6 +212,10 @@ public class Ghost2Application implements ApplicationRunner {
         } catch (IOException e) {
             Logger.error("Failed to release lock on ghost2.lock", e);
         }
+    }
+
+    public long getUptime(){
+        return System.currentTimeMillis() - startTimeInMillis;
     }
 
     /**
