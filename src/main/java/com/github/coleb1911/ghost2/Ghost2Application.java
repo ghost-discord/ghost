@@ -214,8 +214,22 @@ public class Ghost2Application implements ApplicationRunner {
         }
     }
 
-    public long getUptime(){
+    /**
+     * @return the uptime of the current Ghost2Application instance in milliseconds
+     */
+    private long getUptime(){
         return System.currentTimeMillis() - startTimeInMillis;
+    }
+
+    /**
+     * @return the uptime of the current Ghost2Application instance in a readable format (days, hours, minutes, seconds)
+     */
+    public String getFormattedUptime(){
+        long seconds = getUptime() / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+        return days+" days, "+hours%24+" hours, "+minutes%60+" minutes, "+seconds%60+" seconds";
     }
 
     /**
