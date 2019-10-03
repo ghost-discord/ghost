@@ -26,7 +26,7 @@ public final class ModuleIsUp extends Module {
 
         try {
             final InetAddress address = InetAddress.getByName(ctx.getArgs().get(0));
-            if (address.isReachable(2000)) {
+            if (address.isReachable(10000)) {
                 ctx.reply("Host is up!");
             } else {
                 ctx.reply("Host is down!");
