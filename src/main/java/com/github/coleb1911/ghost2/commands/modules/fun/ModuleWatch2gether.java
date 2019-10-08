@@ -2,6 +2,7 @@ package com.github.coleb1911.ghost2.commands.modules.fun;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
@@ -18,7 +19,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
-import java.util.Base64;
 
 public final class ModuleWatch2gether extends Module {
     private static final String W2G_URL = "https://www.watch2gether.com/rooms/create.json";
@@ -45,7 +45,7 @@ public final class ModuleWatch2gether extends Module {
             String url;
             if(ctx.getArgs().isEmpty())url ="";
             else url = ctx.getArgs().get(0);
-            final ModuleWatch2gether.Watch2getherResponse room = restTemplate.postForObject(W2G_URL,new HttpEntity<Watch2getherRequest>(new ModuleWatch2gether.Watch2getherRequest()), ModuleWatch2gether.Watch2getherResponse.class);
+            final ModuleWatch2gether.Watch2getherResponse room = restTemplate.postForObject(W2G_URL,new HttpEntity<>(new ModuleWatch2gether.Watch2getherRequest()), ModuleWatch2gether.Watch2getherResponse.class);
             if (room == null) {
                 ctx.reply("Error trying to create a Watch2gether room");
                 return;
@@ -71,7 +71,7 @@ public final class ModuleWatch2gether extends Module {
         @JsonProperty("share")
         private String url="";
         @JsonProperty("api_key")
-        private String apiKey = new String(Base64.getDecoder().decode("dWp3dzIzNDIzMmV3ZWd3Z3dlZjRk"));
+        private String apiKey = Ghost2Application.getApplicationInstance().getConfig().w2g_api_key();
 
 
         String getUrl() {
