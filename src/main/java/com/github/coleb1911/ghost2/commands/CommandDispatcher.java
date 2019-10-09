@@ -63,6 +63,9 @@ public final class CommandDispatcher {
         String commandName;
         if (trigger.indexOf(prefix) == 0) {
             commandName = trigger.replace(prefix, "");
+        // Check for bot mention & isolate the command name if present
+        } else if(trigger.equals(ctx.getSelf().getMention())){
+            commandName = ctx.getArgs().remove(0);
         } else {
             return;
         }
