@@ -6,8 +6,6 @@ import org.aeonbits.owner.Config.Sources;
 import org.aeonbits.owner.Mutable;
 import org.aeonbits.owner.Reloadable;
 
-import java.util.Base64;
-
 @Sources("classpath:ghost.properties")
 public interface GhostConfig extends Config, Accessible, Mutable, Reloadable {
     @Key("ghost.token")
