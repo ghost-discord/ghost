@@ -73,7 +73,6 @@ public final class ModuleWatch2gether extends Module {
         @JsonProperty("api_key")
         private String apiKey = Ghost2Application.getApplicationInstance().getConfig().w2g_api_key();
 
-
         String getUrl() {
             return url;
         }
