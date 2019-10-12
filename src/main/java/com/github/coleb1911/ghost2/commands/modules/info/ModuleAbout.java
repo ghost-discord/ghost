@@ -1,9 +1,9 @@
 package com.github.coleb1911.ghost2.commands.modules.info;
 
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
-import com.github.coleb1911.ghost2.shared.Constants;
 import discord4j.core.object.entity.Member;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -18,7 +18,7 @@ public final class ModuleAbout extends Module {
     private static final String FIELD_ID = "\uD83C\uDD94 My ID";
     private static final String FIELD_TAG = "\u0023\u20E3 My tag";
     private static final String FIELD_SERVER_TIME = "\u23F1 Time in this server";
-    private static final String FOOTER = "ghost2 v" + Constants.VERSION_STRING;
+    private static final String FOOTER = "ghost2 v" + References.VERSION_STRING;
 
     public ModuleAbout() {
         super(new ModuleInfo.Builder(ModuleAbout.class)

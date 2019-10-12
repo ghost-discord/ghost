@@ -1,6 +1,7 @@
 package com.github.coleb1911.ghost2;
 
 import com.github.coleb1911.ghost2.commands.CommandDispatcher;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import discord4j.core.DiscordClient;
@@ -13,19 +14,15 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
-import org.aeonbits.owner.ConfigFactory;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.FileWriter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.io.File;
@@ -49,18 +46,14 @@ public class Ghost2Application implements ApplicationRunner {
     private static final String ERROR_CONNECTION = "General connection error. Check your internet connection and try again.";
     private static final String ERROR_CONFIG = "ghost.properties is missing or does not contain a bot token. Read ghost2's README for info on how to set up the bot.";
 
-    private static Ghost2Application applicationInstance;
-    private final long startTimeInMillis = System.currentTimeMillis();
-
     private final ApplicationContext ctx;
     private final CommandDispatcher dispatcher;
     private final GuildMetaRepository guildRepo;
     private DiscordClient client;
-    private GhostConfig config;
     private RandomAccessFile lockFile;
     private FileLock lock;
-    private long operatorId;
 
+    @ReflectiveAccess
     public Ghost2Application(ApplicationContext ctx, CommandDispatcher dispatcher, GuildMetaRepository guildRepo) {
         this.ctx = ctx;
         this.dispatcher = dispatcher;
@@ -72,13 +65,6 @@ public class Ghost2Application implements ApplicationRunner {
     }
 
     /**
-     * @return Main application class instance
-     */
-    public static Ghost2Application getApplicationInstance() {
-        return applicationInstance;
-    }
-
-    /**
      * Starts the application.<br>
      * This should only be called by Spring Boot.
      *
@@ -86,6 +72,9 @@ public class Ghost2Application implements ApplicationRunner {
      */
     @Override
     public void run(ApplicationArguments args) {
+        // Set start time
+        References.setStartTime(System.currentTimeMillis());
+
         // Try to acquire a lock to ensure only one application instance is running
         if (!this.lock()) {
             Logger.error("Only one instance of ghost2 may run at a time. Close any other instances and try again.");
@@ -93,10 +82,10 @@ public class Ghost2Application implements ApplicationRunner {
         }
 
         // Set instance
-        applicationInstance = this;
+        References.setInstance(this);
 
         // Fetch config
-        config = ConfigFactory.create(GhostConfig.class);
+        GhostConfig config = References.getConfig();
         String token = config.token();
         if (null == token) {
             Logger.error(ERROR_CONFIG);
@@ -116,12 +105,13 @@ public class Ghost2Application implements ApplicationRunner {
         client = new DiscordClientBuilder(token)
                 .setInitialPresence(Presence.online(Activity.listening("your commands.")))
                 .build();
+        References.setClient(client);
 
         // Register event listeners
         this.registerListeners(client);
 
         // Get current bot operator, log notice if null
-        operatorId = config.operatorId();
+        long operatorId = config.operatorId();
         if (operatorId == -1) {
             Logger.info(MESSAGE_SET_OPERATOR);
         }
@@ -155,41 +145,6 @@ public class Ghost2Application implements ApplicationRunner {
     }
 
     /**
-     * Reloads the application config &amp; all related values.<br>
-     * Note: The application will exit if a token change occurred. Don't change it at runtime.
-     */
-    public void reloadConfig() {
-        config.reload();
-        if (!config.token().equals(client.getConfig().getToken())) {
-            Logger.info("Token changed on config reload. Exiting.");
-            exit(0);
-            return;
-        }
-        operatorId = config.operatorId();
-    }
-
-    /**
-     * @return The {@code CommandDispatcher} for this instance
-     */
-    public CommandDispatcher getDispatcher() {
-        return dispatcher;
-    }
-
-    /**
-     * @return The user ID of the bot's current operator
-     */
-    public long getOperatorId() {
-        return operatorId;
-    }
-
-    /**
-     * @return The currently loaded application config
-     */
-    public GhostConfig getConfig() {
-        return config;
-    }
-
-    /**
      * Tries to acquire a lock on ghost2.lock
      *
      * @return True if lock was successfully acquired
@@ -216,24 +171,6 @@ public class Ghost2Application implements ApplicationRunner {
         } catch (IOException e) {
             Logger.error("Failed to release lock on ghost2.lock", e);
         }
-    }
-
-    /**
-     * @return the uptime of the current Ghost2Application instance in milliseconds
-     */
-    private long getUptime(){
-        return System.currentTimeMillis() - startTimeInMillis;
-    }
-
-    /**
-     * @return the uptime of the current Ghost2Application instance in a readable format (days, hours, minutes, seconds)
-     */
-    public String getFormattedUptime(){
-        long seconds = getUptime() / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-        return days+" days, "+hours%24+" hours, "+minutes%60+" minutes, "+seconds%60+" seconds";
     }
 
     /**

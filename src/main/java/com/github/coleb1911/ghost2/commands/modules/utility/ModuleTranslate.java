@@ -1,12 +1,12 @@
 package com.github.coleb1911.ghost2.commands.modules.utility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.coleb1911.ghost2.Ghost2Application;
-import com.github.coleb1911.ghost2.GhostConfig;
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -33,31 +33,32 @@ import java.util.regex.Pattern;
 
 /**
  * This class uses the IBM Watson translator API. It requires an API key (available through https://www.ibm.com/watson/services/language-translator/), and is free up to 1 million characters (over 300 pages) per month.
- *
+ * <p>
  * It reads from two properties in ghost.properties:
  * - ibmwatsontranslator.key is the API Key.
  * - ibmwatsontranslator.url is the endpoint URL, which can be found in the same page as the API Key.
  */
-final public class ModuleTranslate extends Module {
+public final class ModuleTranslate extends Module {
     private static final String REPLY_INVALID_INPUT = "Invalid input. See help for more details.";
+    private static final String REPLY_UNCONFIGURED = "Translate module is unconfigured.";
+
     //Since IBM Watson only takes 2-letter language codes, perform basic validation.
     private static final String DEFAULT_LANG_CODE =
             Locale.getDefault().getISO3Language().length() == 2 ? Locale.getDefault().getISO3Language() : "en";
-    private static final String DESCRIPTION =
-            "Translates a word or an expression.\n" +
-                    "**Ex**.: \"fr ¡Buenas noches! from:es\" will translate \"¡Buenas noches!\" from Spanish to French.\n" +
-                    "If no \"from\" language is specified, " +
-                    Locale.forLanguageTag(DEFAULT_LANG_CODE).getDisplayName() + " will be used.\n\n" +
-                    "**Sample language codes**\n" +
-                    "French: fr\n" +
-                    "Spanish: es\n" +
-                    "English: en\n" +
-                    "German: de\n" +
-                    "Russian: ru\n";
+    private static final String DESCRIPTION = "Translates a word or an expression.\n" +
+            "**Ex**.: \"fr ¡Buenas noches! from:es\" will translate \"¡Buenas noches!\" from Spanish to French.\n" +
+            "If no \"from\" language is specified, " +
+            Locale.forLanguageTag(DEFAULT_LANG_CODE).getDisplayName() + " will be used.\n\n" +
+            "**Sample language codes**\n" +
+            "French: fr\n" +
+            "Spanish: es\n" +
+            "English: en\n" +
+            "German: de\n" +
+            "Russian: ru\n";
 
     //These Strings have to be initialized in the `invoke` method in order to read system properties.
-    private String API_URL;
-    private String API_KEY;
+    private static final String API_URL = References.getConfig().getProperty("ibmwatsontranslator.url");
+    private static final String API_KEY = References.getConfig().getProperty("ibmwatsontranslator.key");
 
     @ReflectiveAccess
     public ModuleTranslate() {
@@ -68,7 +69,11 @@ final public class ModuleTranslate extends Module {
 
     @Override
     public void invoke(@NotNull CommandContext ctx) {
-        initAPIStrings();
+        if (StringUtils.isBlank(API_URL) || StringUtils.isBlank(API_KEY)) {
+            ctx.reply(REPLY_UNCONFIGURED);
+            return;
+        }
+
         String command = String.join(" ", ctx.getArgs());
 
         //These two are mandatory; throw a runtime exception if we can't extract them.
@@ -178,15 +183,6 @@ final public class ModuleTranslate extends Module {
             return Optional.empty();
         }
 
-    }
-
-    private void initAPIStrings() {
-        final String API_URL_PROP_STRING = "ibmwatsontranslator.url";
-        final String API_KEY_PROP_STRING = "ibmwatsontranslator.key";
-        GhostConfig config = Ghost2Application.getApplicationInstance().getConfig();
-
-        API_URL = config.getProperty(API_URL_PROP_STRING);
-        API_KEY = config.getProperty(API_KEY_PROP_STRING);
     }
 
 

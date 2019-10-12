@@ -1,6 +1,6 @@
 package com.github.coleb1911.ghost2.commands.modules.operator;
 
-import com.github.coleb1911.ghost2.Ghost2Application;
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
@@ -19,6 +19,6 @@ public final class ModuleShutdown extends Module {
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
         ctx.reply("Bye!");
-        Ghost2Application.getApplicationInstance().exit(0);
+        References.getInstance().exit(0);
     }
 }

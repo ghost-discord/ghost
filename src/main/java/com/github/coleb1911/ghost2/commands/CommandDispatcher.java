@@ -1,6 +1,7 @@
 package com.github.coleb1911.ghost2.commands;
 
 import com.github.coleb1911.ghost2.Ghost2Application;
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.CommandType;
 import com.github.coleb1911.ghost2.commands.meta.Module;
@@ -64,7 +65,7 @@ public final class CommandDispatcher {
         if (trigger.indexOf(prefix) == 0) {
             commandName = trigger.replace(prefix, "");
         // Check for bot mention & isolate the command name if present
-        } else if(trigger.equals(ctx.getSelf().getMention())){
+        } else if (trigger.equals(ctx.getSelf().getMention())) {
             commandName = ctx.getArgs().remove(0);
         } else {
             return;
@@ -76,17 +77,27 @@ public final class CommandDispatcher {
             return;
         }
 
+        // Check permissions
+        if (!checkPerms(module, ctx)) {
+            return;
+        }
+
+        // Finally kick off command thread if all checks are passed
+        executor.execute(() -> module.invoke(ctx));
+    }
+
+    private boolean checkPerms(final Module module, final CommandContext ctx) {
         // Check user's permissions
         PermissionSet invokerPerms = ctx.getInvoker().getBasePermissions().block();
         if (null == invokerPerms) {
             ctx.reply(Module.REPLY_GENERAL_ERROR);
-            return;
+            return false;
         }
         if (!invokerPerms.contains(Permission.ADMINISTRATOR)) {
             for (Permission required : module.getInfo().getUserPermissions()) {
                 if (!invokerPerms.contains(required)) {
                     ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
-                    return;
+                    return false;
                 }
             }
         }
@@ -95,29 +106,28 @@ public final class CommandDispatcher {
         // An exception is made for ModuleClaimOperator
         if (!(module instanceof ModuleClaimOperator) &&
                 (module.getInfo().getType() == CommandType.OPERATOR) &&
-                (ctx.getInvoker().getId().asLong() != Ghost2Application.getApplicationInstance().getOperatorId())) {
+                (ctx.getInvoker().getId().asLong() != References.getConfig().operatorId())) {
 
             ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
-            return;
+            return false;
         }
 
         // Check bot's permissions
         PermissionSet botPerms = ctx.getSelf().getBasePermissions().block();
         if (null == botPerms) {
             ctx.reply(Module.REPLY_GENERAL_ERROR);
-            return;
+            return false;
         }
         if (!botPerms.contains(Permission.ADMINISTRATOR)) {
             for (Permission required : module.getInfo().getBotPermissions()) {
                 if (!botPerms.contains(required)) {
                     ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_BOT);
-                    return;
+                    return false;
                 }
             }
         }
 
-        // Finally kick off command thread if all checks are passed
-        executor.execute(() -> module.invoke(ctx));
+        return true;
     }
 
     public CommandRegistry getRegistry() {

@@ -1,7 +1,7 @@
 package com.github.coleb1911.ghost2.buildtools;
 
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.buildtools.JDKDownloadUtils.Platform;
-import com.github.coleb1911.ghost2.shared.Constants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.pmw.tinylog.Configurator;
@@ -306,7 +306,7 @@ public final class RuntimeBuilder {
                     String archiveName = "ghost2-" +
                             platform.toString() +
                             "-" +
-                            Constants.VERSION_STRING +
+                            References.VERSION_STRING +
                             ".zip";
                     SystemUtils.compress(releaseDir, new File(targetDir, archiveName));
 

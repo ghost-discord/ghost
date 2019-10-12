@@ -1,6 +1,6 @@
 package com.github.coleb1911.ghost2.commands.modules.utility;
 
-import com.github.coleb1911.ghost2.Ghost2Application;
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
@@ -18,6 +18,6 @@ public final class ModuleUptime extends Module {
 
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
-        ctx.reply(Ghost2Application.getApplicationInstance().getFormattedUptime());
+        ctx.reply(References.uptime());
     }
 }

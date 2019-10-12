@@ -1,7 +1,7 @@
 package com.github.coleb1911.ghost2.commands.modules.operator;
 
-import com.github.coleb1911.ghost2.Ghost2Application;
 import com.github.coleb1911.ghost2.GhostConfig;
+import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
@@ -63,11 +63,11 @@ public final class ModuleClaimOperator extends Module {
                 .doOnNext(event -> {
                     if (event.getMessage().getContent().orElse("").equals(key)) {
                         ctx.reply(REPLY_VALID);
-                        GhostConfig cfg = Ghost2Application.getApplicationInstance().getConfig();
+                        GhostConfig cfg = References.getConfig();
                         cfg.setProperty("ghost.operatorid", event.getMember().orElseThrow().getId().asString());
                         URI cfgUri;
                         try {
-                            cfgUri = Objects.requireNonNull(Ghost2Application.getApplicationInstance().getClass().getClassLoader().getResource("ghost.properties")).toURI();
+                            cfgUri = Objects.requireNonNull(References.getInstance().getClass().getClassLoader().getResource("ghost.properties")).toURI();
                             try (FileOutputStream f = new FileOutputStream(new File(cfgUri), false)) {
                                 cfg.store(f, "ghost2 properties");
                                 f.flush();
@@ -81,7 +81,7 @@ public final class ModuleClaimOperator extends Module {
                 .blockFirst();
 
         // Reload configuration
-        Ghost2Application.getApplicationInstance().reloadConfig();
+        References.reloadConfig();
     }
 
     private String generateRandomString() {
