@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'java-library'
+    id 'jacoco'
     id 'com.gradle.build-scan' version '2.3'
     id 'org.springframework.boot' version '2.1.6.RELEASE'
 }
@@ -105,4 +106,17 @@ clean {
     delete "${rootDir}/bt_temp"
     delete "${rootDir}/bt_out"
     delete "${rootDir}/bt_xplatform"
+}
+
+jacoco {
+    toolVersion = "0.8.4"
+    reportsDir = file("$buildDir/jacoco")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
 }
