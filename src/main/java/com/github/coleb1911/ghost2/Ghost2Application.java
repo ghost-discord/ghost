@@ -11,6 +11,7 @@ import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.util.Snowflake;
@@ -204,6 +205,15 @@ public class Ghost2Application implements ApplicationRunner {
                     // Remove unreceived guilds
                     idsToRemove.forEach(guildRepo::deleteById);
                 });
+
+        // Listen for new guilds
+        client.getEventDispatcher().on(GuildCreateEvent.class)
+                .map(GuildCreateEvent::getGuild)
+                .filter(Objects::nonNull)
+                .filter(guild -> guildRepo.existsById(guild.getId().asLong()))
+                .map(Guild::getId)
+                .map(GuildMeta::new)
+                .subscribe(guildRepo::save);
 
         // Drop guilds when we're removed from them
         client.getEventDispatcher().on(GuildDeleteEvent.class)

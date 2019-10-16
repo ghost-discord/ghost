@@ -1,6 +1,7 @@
 package com.github.coleb1911.ghost2.database.entities;
 
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.util.Snowflake;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -53,6 +54,16 @@ public class GuildMeta {
      */
     public GuildMeta(long id) {
         this.id = id;
+    }
+
+    /**
+     * Constructs a new GuildMeta.<br>
+     * See field JavaDocs for default field values.
+     *
+     * @param id Guild ID
+     */
+    public GuildMeta(Snowflake id) {
+        this.id = id.asLong();
     }
 
     public Long getId() {
