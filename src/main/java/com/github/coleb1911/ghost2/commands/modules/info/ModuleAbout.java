@@ -4,6 +4,7 @@ import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.entity.Member;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -20,6 +21,7 @@ public final class ModuleAbout extends Module {
     private static final String FIELD_SERVER_TIME = "\u23F1 Time in this server";
     private static final String FOOTER = "ghost2 v" + References.VERSION_STRING;
 
+    @ReflectiveAccess
     public ModuleAbout() {
         super(new ModuleInfo.Builder(ModuleAbout.class)
                 .withName("about")
@@ -34,7 +36,7 @@ public final class ModuleAbout extends Module {
         String timeFormatted = DurationFormatUtils.formatDuration(timeInServer.toMillis(), "dd 'days', HH 'hours', mm 'minutes'");
 
         ctx.getChannel().createEmbed(embedCreateSpec -> embedCreateSpec
-                .setAuthor(me.getUsername(), "https://github.com/cbryant02/ghost2", me.getAvatarUrl())
+                .setAuthor(me.getUsername(), GITHUB_URL, me.getAvatarUrl())
                 .setTitle("About")
                 .setDescription(FLAVOR_TEXT)
                 .addField(FIELD_ID, me.getId().asString(), false)
