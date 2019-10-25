@@ -49,6 +49,10 @@ public class References {
         return INSTANCE.get();
     }
 
+    public static DiscordClient getClient() {
+        return CLIENT.get();
+    }
+
     // Setters
     static void setInstance(final Ghost2Application instance) {
         INSTANCE.set(instance);
