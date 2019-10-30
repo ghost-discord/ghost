@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public final class TrackQueue extends AudioEventAdapter {
@@ -28,7 +29,7 @@ public final class TrackQueue extends AudioEventAdapter {
     Mono<TrackAddResult> add(AudioTrack track) {
         return Mono.fromCallable(() -> {
             if (queue.size() < MAX_SIZE) {
-                if (!player.startTrack(track, true)) {
+                if (player.startTrack(track, true)) {
                     return TrackAddResult.PLAYING;
                 } else if (queue.offerLast(track)) {
                     return TrackAddResult.SQ_QUEUED;
@@ -41,13 +42,12 @@ public final class TrackQueue extends AudioEventAdapter {
     Mono<TrackAddResult> addAll(List<AudioTrack> tracks) {
         return Mono.fromCallable(() -> {
             List<TrackAddResult> stats = Flux.fromIterable(tracks)
+                    .take(MAX_SIZE)
                     .flatMap(this::add)
                     .collectList()
                     .block();
 
-            if (stats == null) {
-                return TrackAddResult.FAILED;
-            }
+            if(tracks.size() > MAX_SIZE) return TrackAddResult.MQ_QUEUED_SOME;
 
             for (TrackAddResult s : stats) {
                 if (s.equals(TrackAddResult.FULL) ||
@@ -71,6 +71,14 @@ public final class TrackQueue extends AudioEventAdapter {
         }).onErrorReturn(false);
     }
 
+    Mono<Boolean> remove(int index) {
+        return Mono.fromCallable(() -> {
+            Optional<AudioTrack> trackAtIndex = queue.stream().skip(index).findFirst();
+            if(trackAtIndex.isEmpty()) return false;
+            return queue.remove(trackAtIndex.get());
+        }).onErrorReturn(false);
+    }
+
     Mono<Boolean> next() {
         return Mono.just(player.startTrack(queue.pollFirst(), false));
     }
@@ -86,8 +94,9 @@ public final class TrackQueue extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (endReason.mayStartNext) {
-            next();
-        }
+        Mono.just(endReason.mayStartNext)
+                .filter(Boolean::booleanValue)
+                .flatMap(ignore -> next())
+                .subscribe();
     }
 }
