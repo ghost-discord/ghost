@@ -91,7 +91,7 @@ public class CommandContext {
     }
 
     private List<String> extractArgs(Message message) {
-        String content = message.getContent().orElse("").toLowerCase();
+        String content = message.getContent().orElse("");
         // Arrays.asList returns an immutable list implementation, so we need to wrap it in an actual ArrayList
         return new ArrayList<>(Arrays.asList(content.split("\\p{javaSpaceChar}")));
     }
