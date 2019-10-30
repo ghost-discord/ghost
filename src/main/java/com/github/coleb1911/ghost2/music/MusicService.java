@@ -29,6 +29,14 @@ public final class MusicService {
                 .defaultIfEmpty(TrackAddResult.FAILED);
     }
 
+    public Mono<Boolean> next() {
+        return queue.next();
+    }
+
+    public Mono<Boolean> remove(int index) {
+        return queue.remove(index);
+    }
+
     public Flux<AudioTrack> streamTracks() {
         return queue.getTracks();
     }
