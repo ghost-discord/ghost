@@ -46,10 +46,10 @@ public final class ModuleWikipedia extends Module {
 
     public ModuleWikipedia(String baseUrl, RestTemplate restTemplate) {
         super(new ModuleInfo.Builder(ModuleWikipedia.class)
-            .withName("wikipedia")
-            .withAliases("wiki", "w")
-            .withDescription("Look up an article on Wikipedia")
-            .withBotPermissions(PermissionSet.of(Permission.EMBED_LINKS)));
+                .withName("wikipedia")
+                .withAliases("wiki", "w")
+                .withDescription("Look up an article on Wikipedia")
+                .withBotPermissions(PermissionSet.of(Permission.EMBED_LINKS)));
         this.baseURI = URI.create(baseUrl);
         this.restTemplate = restTemplate;
     }
@@ -64,34 +64,34 @@ public final class ModuleWikipedia extends Module {
             ResponseEntity<WikipediaSearchResults> results = restTemplate.getForEntity(resultQuery, WikipediaSearchResults.class);
             SearchInfo searchInfo = results.getBody().getQueryResult().getSearchInfo();
             List<SearchResult> searchResults = results.getBody().getQueryResult().getSearchResults();
-            if( !searchResults.isEmpty() ) {
+            if (!searchResults.isEmpty()) {
                 SearchResult topResult = searchResults.get(0);
                 ctx.getChannel().createMessage(message -> message.setEmbed(embedCreateSpec -> {
                     embedCreateSpec.setTitle(topResult.title);
-                    embedCreateSpec.setImage("https://en.wikipedia.org/static/images/project-logos/enwiki-2x.png");
+                    embedCreateSpec.setThumbnail("https://en.wikipedia.org/static/images/project-logos/enwiki-2x.png");
                     embedCreateSpec.setDescription(Jsoup.parse(topResult.snippet).text());
                 })).block();
             } else {
-                if( searchInfo.hasSuggestions() ) {
+                if (searchInfo.hasSuggestions()) {
                     ctx.reply("Did you mean \"" + searchInfo.getSuggestion() + "\"?");
                 } else {
                     ctx.reply("Couldn't find anything about \"" + searchString + "\" on wikipedia.");
                 }
             }
-        } catch (RestClientException ex ) {
+        } catch (RestClientException ex) {
             response = "Error: " + ex.toString();
             ctx.reply(response);
         }
     }
 
     private static class SearchInfo {
-        @JsonProperty(value="totalHits")
+        @JsonProperty(value = "totalHits")
         private int totalHits;
 
         @JsonProperty(value = "suggestion")
         private String suggestion;
 
-        @JsonProperty(value="suggestionsnippet")
+        @JsonProperty(value = "suggestionsnippet")
         private String suggestionSnippet;
 
         public String getSuggestion() {
@@ -108,25 +108,25 @@ public final class ModuleWikipedia extends Module {
     }
 
     private static class SearchResult {
-        @JsonProperty(value="ns")
+        @JsonProperty(value = "ns")
         private int ns;
 
-        @JsonProperty(value="title")
+        @JsonProperty(value = "title")
         private String title;
 
-        @JsonProperty(value="pageid")
+        @JsonProperty(value = "pageid")
         private int pageId;
 
-        @JsonProperty(value="size")
+        @JsonProperty(value = "size")
         private int size;
 
-        @JsonProperty(value="wordcount")
+        @JsonProperty(value = "wordcount")
         private int wordCount;
 
-        @JsonProperty(value="snippet")
+        @JsonProperty(value = "snippet")
         private String snippet;
 
-        @JsonProperty(value="timestamp")
+        @JsonProperty(value = "timestamp")
         private Instant timestamp;
 
         public String getSnippet() {
@@ -136,10 +136,10 @@ public final class ModuleWikipedia extends Module {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class QueryResult {
-        @JsonProperty(value="searchinfo")
+        @JsonProperty(value = "searchinfo")
         private SearchInfo searchInfo;
 
-        @JsonProperty(value="search")
+        @JsonProperty(value = "search")
         private List<SearchResult> searchResults;
 
         public List<SearchResult> getSearchResults() {
@@ -153,22 +153,22 @@ public final class ModuleWikipedia extends Module {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class ContinueObject {
-        @JsonProperty(value="sroffset")
+        @JsonProperty(value = "sroffset")
         private int srOffset;
 
-        @JsonProperty(value="continue")
+        @JsonProperty(value = "continue")
         private String continueString;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class WikipediaSearchResults {
-        @JsonProperty(value="batchcomplete")
+        @JsonProperty(value = "batchcomplete")
         private String batchComplete;
 
-        @JsonProperty(value="continue")
+        @JsonProperty(value = "continue")
         private ContinueObject continueObject;
 
-        @JsonProperty(value="query")
+        @JsonProperty(value = "query")
         private QueryResult queryResult;
 
         public QueryResult getQueryResult() {
