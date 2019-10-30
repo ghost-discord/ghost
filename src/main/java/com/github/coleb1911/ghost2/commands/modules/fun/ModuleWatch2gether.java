@@ -33,10 +33,6 @@ public final class ModuleWatch2gether extends Module {
                 .withBotPermissions(PermissionSet.of(Permission.EMBED_LINKS)));
     }
 
-    /**
-     *
-     * @return
-     */
     private static RestTemplate createRestTemplate() {
         HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build()).build();
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
