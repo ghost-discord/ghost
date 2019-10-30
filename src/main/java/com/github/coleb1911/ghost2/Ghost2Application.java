@@ -4,6 +4,7 @@ import com.github.coleb1911.ghost2.commands.CommandDispatcher;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
+import com.github.coleb1911.ghost2.music.MusicServiceManager;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
@@ -134,6 +135,9 @@ public class Ghost2Application implements ApplicationRunner {
      * @param status Status code
      */
     public void exit(int status) {
+        // Shut down MusicServiceManager
+        MusicServiceManager.shutdown();
+
         // Log out bot
         client.logout().block();
 

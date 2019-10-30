@@ -1,24 +1,20 @@
 package com.github.coleb1911.ghost2.music;
 
 public enum TrackAddResult {
-    // 0 = playing
-    PLAYING(0),
-    // 1 = single track
-    SQ_QUEUED(1),
-    // 2 = multiple tracks
-    MQ_QUEUED_ALL(2),
-    MQ_QUEUED_SOME(2),
-    // 3 = failure
-    FULL(3),
-    FAILED(3);
+    // Single track, immediate play
+    PLAYING("Playing track."),
+    // Single track
+    SQ_QUEUED("Queued track."),
+    // Multiple tracks
+    MQ_QUEUED_ALL("Queued playlist."),
+    MQ_QUEUED_SOME("Queued playlist. Some tracks could not be added to the queue."),
+    // Failure
+    FULL("The queue is full."),
+    FAILED("An error occurred. Please try again.");
 
-    private final int status;
+    public final String message;
 
-    TrackAddResult(int status) {
-        this.status = status;
-    }
-
-    public int getStatus() {
-        return status;
+    TrackAddResult(final String message) {
+        this.message = message;
     }
 }

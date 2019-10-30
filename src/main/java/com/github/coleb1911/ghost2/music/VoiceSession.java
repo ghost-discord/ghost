@@ -22,7 +22,7 @@ public final class VoiceSession {
                     spec.setProvider(provider);
                     state.set(State.CONNECTING);
                 }))
-                .timeout(Duration.ofSeconds(20L))
+                .timeout(Duration.ofSeconds(10L))
                 .doOnNext(connection::set)
                 .thenReturn(State.CONNECTED)
                 .doOnSuccess(state::set)

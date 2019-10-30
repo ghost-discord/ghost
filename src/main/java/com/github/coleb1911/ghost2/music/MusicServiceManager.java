@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class MusicServiceManager {
@@ -35,16 +36,17 @@ public final class MusicServiceManager {
         AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER);
 
         CLEANUP_SCHEDULER = new ScheduledThreadPoolExecutor(2);
-        CLEANUP_SCHEDULER.scheduleAtFixedRate(MusicServiceManager::cleanupAll, 3L, 3L, TimeUnit.MINUTES);
+        CLEANUP_SCHEDULER.scheduleAtFixedRate(MusicServiceManager::cleanupAll, 10L, 10L, TimeUnit.SECONDS);
 
         SERVICES = new ConcurrentHashMap<>();
+        Logger.info("MusicServiceManager initialized.");
     }
 
     // Disable instantiation
     private MusicServiceManager() {
     }
 
-    public static Mono<MusicService> createService(final Snowflake guildId, final Snowflake channelId) {
+    public static Mono<MusicService> fetch(final Snowflake guildId, final Snowflake channelId) {
         return Mono.fromCallable(() -> {
             // Return active service if it already exists
             MusicService service;
@@ -56,29 +58,34 @@ public final class MusicServiceManager {
             session.join(channelId, new SimpleAudioProvider(player)).subscribe();
 
             // Create and return service
-            service = new MusicService(player, guildId, session);
+            service = new MusicService(player, session);
             SERVICES.put(guildId, service);
+            Logger.info("Created new MusicService for guild " + guildId.asString());
             return service;
         });
     }
 
+    /**
+     * Check if there is an active {@link MusicService} for the given guild.
+     */
     public static boolean serviceExists(final Snowflake guildId) {
         return SERVICES.containsKey(guildId);
     }
 
     /**
-     * Request to cleanup a MusicService at some point in the future. Unconditional.
-     *
-     * @param guildId Guild ID of MusicService to clean up
+     * Perform full shutdown of the MusicServiceManager.
      */
-    static void requestCleanup(final Snowflake guildId) {
-        CLEANUP_SCHEDULER.submit(() -> Mono.just(guildId)
-                .flatMap(MusicServiceManager::cleanup)
-                .subscribe());
+    public static void shutdown() {
+        Flux.fromIterable(SERVICES.keySet())
+                .flatMap(MusicServiceManager::forceCleanup)
+                .timeout(Duration.ofMinutes(1L))
+                .subscribe();
+        PLAYER_MANAGER.shutdown();
+        CLEANUP_SCHEDULER.shutdown();
     }
 
     /**
-     * Request to load a track(s) from a LavaPlayer-supported source.
+     * Request to load a track (or tracks) from a LavaPlayer-supported source.
      *
      * @param source Audio track source
      * @return List of audio track(s) acquired from the source
@@ -105,11 +112,15 @@ public final class MusicServiceManager {
                 @Override
                 public void noMatches() {
                     Logger.error("Failed to find valid audio track for source " + source);
+                    loadResult.set(List.of());
+                    latch.countDown();
                 }
 
                 @Override
                 public void loadFailed(FriendlyException e) {
                     Logger.error(e, "Encountered an exception when loading track from source " + source);
+                    loadResult.set(List.of());
+                    latch.countDown();
                 }
             });
 
@@ -119,11 +130,11 @@ public final class MusicServiceManager {
     }
 
     /**
-     * Perform MusicService cleanup for a guild if necessary. Unconditional.
+     * Performs MusicService cleanup for a guild. Unconditional.
      *
      * @param guildId Guild to run cleanup on
      */
-    private static Mono<Void> cleanup(final Snowflake guildId) {
+    private static Mono<Void> forceCleanup(final Snowflake guildId) {
         return Mono.just(guildId)
                 .filter(SERVICES::containsKey)
                 .map(SERVICES::remove)
@@ -140,10 +151,13 @@ public final class MusicServiceManager {
      * {@link MusicService#shouldCleanup()}.
      */
     private static void cleanupAll() {
+        AtomicInteger count = new AtomicInteger(0);
         Flux.fromIterable(SERVICES.keySet())
                 .filter(id -> SERVICES.get(id).shouldCleanup())
-                .flatMap(MusicServiceManager::cleanup)
+                .doOnNext(ignore -> count.getAndIncrement())
+                .flatMap(MusicServiceManager::forceCleanup)
                 .timeout(Duration.ofMinutes(1L))
+                .doOnComplete(() -> Logger.info("Cleanup ran. " + count.get() + " services destroyed."))
                 .subscribe();
     }
 }
