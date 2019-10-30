@@ -37,11 +37,7 @@ public final class MusicUtils {
                 .filter(channel -> MusicUtils.checkVoicePermissions(ctx.getInvoker(), channel))
                 .switchIfEmpty(Mono.fromRunnable(() -> ctx.reply(REPLY_NO_PERMISSIONS)))
                 // Return music service
-                .flatMap(channel -> MusicServiceManager.fetch(ctx.getGuild().getId(), channel.getId()))
-                // Reaction feedback for normal completion
-                .doOnSuccess(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
-                // Reaction feedback for unexpected error
-                .doOnError(ignore -> ctx.getMessage().addReaction(REACT_WARNING).subscribe());
+                .flatMap(channel -> MusicServiceManager.fetch(ctx.getGuild().getId(), channel.getId()));
     }
 
     /**

@@ -18,6 +18,9 @@ public final class ModuleJoin extends Module {
 
     @Override
     public void invoke(@NotNull CommandContext ctx) {
-        MusicUtils.fetchMusicService(ctx).subscribe();
+        MusicUtils.fetchMusicService(ctx)
+                .doOnSuccess(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
+                .doOnError(ignore -> ctx.getMessage().addReaction(REACT_WARNING).subscribe())
+                .subscribe();
     }
 }
