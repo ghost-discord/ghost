@@ -36,7 +36,7 @@ public final class MusicServiceManager {
         AudioSourceManagers.registerRemoteSources(PLAYER_MANAGER);
 
         CLEANUP_SCHEDULER = new ScheduledThreadPoolExecutor(2);
-        CLEANUP_SCHEDULER.scheduleAtFixedRate(MusicServiceManager::cleanupAll, 10L, 10L, TimeUnit.SECONDS);
+        CLEANUP_SCHEDULER.scheduleAtFixedRate(MusicServiceManager::cleanupAll, 5L, 5L, TimeUnit.MINUTES);
 
         SERVICES = new ConcurrentHashMap<>();
         Logger.info("MusicServiceManager initialized.");
@@ -85,6 +85,22 @@ public final class MusicServiceManager {
     }
 
     /**
+     * Performs MusicService cleanup for a guild. Unconditional.
+     *
+     * @param guildId Guild to run cleanup on
+     */
+    public static Mono<Void> forceCleanup(final Snowflake guildId) {
+        return Mono.just(guildId)
+                .filter(SERVICES::containsKey)
+                .map(SERVICES::remove)
+                .doOnNext(service -> {
+                    service.destroy();
+                    Logger.info("Cleaned up MusicService for guild " + guildId.asString());
+                })
+                .then();
+    }
+
+    /**
      * Request to load a track (or tracks) from a LavaPlayer-supported source.
      *
      * @param source Audio track source
@@ -127,22 +143,6 @@ public final class MusicServiceManager {
             latch.await();
             return loadResult.get();
         }).onErrorReturn(List.of());
-    }
-
-    /**
-     * Performs MusicService cleanup for a guild. Unconditional.
-     *
-     * @param guildId Guild to run cleanup on
-     */
-    private static Mono<Void> forceCleanup(final Snowflake guildId) {
-        return Mono.just(guildId)
-                .filter(SERVICES::containsKey)
-                .map(SERVICES::remove)
-                .doOnNext(service -> {
-                    service.destroy();
-                    Logger.info("Cleaned up MusicService for guild " + guildId.asString());
-                })
-                .then();
     }
 
     /**
