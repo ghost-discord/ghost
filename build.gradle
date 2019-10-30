@@ -24,6 +24,8 @@ dependencies {
     implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.6.RELEASE') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
+    // Included to deserialize timestamps from JSON
+    implementation group: 'com.fasterxml.jackson.datatype', name:'jackson-datatype-jsr310'
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
 
     // Spring Web for consuming REST APIs
@@ -43,9 +45,12 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
+    implementation group: 'org.jsoup', name:'jsoup', version:'1.12.1'
 
     // JUnit
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.5.0'
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1'
+    testImplementation group:'org.mockito', name: 'junit-jupiter', version: '2.20.0'
 
     // Apache utilities for build tools
     // Excluded in final build
