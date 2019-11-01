@@ -67,10 +67,6 @@ test {
 bootJar {
     exclude 'ghost.properties'
     exclude '**/buildtools'
-    exclude '**/httpclient-*.jar'
-    exclude '**/httpcore-*.jar'
-    exclude '**/commons-compress-*.jar'
-    exclude '**/commons-io-*.jar'
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
