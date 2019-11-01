@@ -9,6 +9,7 @@ import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,8 +95,8 @@ public class CommandContext {
                 .subscribe();
     }
 
-    public void replyEmbed(Consumer<EmbedCreateSpec> consumer) {
-        channel.createEmbed(consumer).subscribe();
+    public Mono<Message> replyEmbed(Consumer<EmbedCreateSpec> consumer) {
+        return channel.createEmbed(consumer);
     }
 
     private List<String> extractArgs(Message message) {
