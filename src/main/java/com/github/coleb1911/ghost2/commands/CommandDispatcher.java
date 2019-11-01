@@ -15,6 +15,7 @@ import discord4j.core.object.util.PermissionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,7 +65,7 @@ public final class CommandDispatcher {
         String commandName;
         if (trigger.indexOf(prefix) == 0) {
             commandName = trigger.replace(prefix, "");
-        // Check for bot mention & isolate the command name if present
+            // Check for bot mention & isolate the command name if present
         } else if (trigger.equals(ctx.getSelf().getMention())) {
             commandName = ctx.getArgs().remove(0);
         } else {
@@ -83,7 +84,10 @@ public final class CommandDispatcher {
         }
 
         // Finally kick off command thread if all checks are passed
-        executor.execute(() -> module.invoke(ctx));
+
+        executor.execute(() -> ctx.getChannel()
+                .typeUntil(Mono.fromRunnable(() -> module.invoke(ctx)))
+                .subscribe());
     }
 
     private boolean checkPerms(final Module module, final CommandContext ctx) {
