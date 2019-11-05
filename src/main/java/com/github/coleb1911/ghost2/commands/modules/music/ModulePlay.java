@@ -5,8 +5,13 @@ import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.music.MusicUtils;
+import com.github.coleb1911.ghost2.music.youtube.YoutubeScrapeSearchProvider;
+import com.github.coleb1911.ghost2.music.youtube.YoutubeSearchResult;
 
 import javax.validation.constraints.NotNull;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModulePlay extends Module {
 
@@ -20,13 +25,37 @@ public final class ModulePlay extends Module {
 
     @Override
     public void invoke(@NotNull CommandContext ctx) {
-        if (ctx.getArgs().size() < 1) {
+        if (ctx.getArgs().isEmpty()) {
             ctx.reply("Please provide a link to a valid track.");
             return;
         }
 
+        final String arg = ctx.getArgs().get(0);
+        final AtomicReference<String> source = new AtomicReference<>();
+        final AtomicReference<String> title = new AtomicReference<>();
+        if (isUrlValid(arg)) {
+            source.set(arg);
+        } else {
+            String term = String.join(" ", ctx.getArgs());
+            YoutubeSearchResult result = new YoutubeScrapeSearchProvider().search(term);
+            source.set(result.uri);
+            title.set(result.title);
+        }
+
         MusicUtils.fetchMusicService(ctx)
-                .flatMap(service -> service.loadTrack(ctx.getArgs().get(0)))
-                .subscribe(result -> ctx.reply(result.message));
+                .flatMap(service -> service.loadTrack(source.get()))
+                .subscribe(result -> {
+                    if (title.get() != null) ctx.reply("Queued **" + title + "**.");
+                    else ctx.reply(result.message);
+                });
+    }
+
+    private boolean isUrlValid(String urlString) {
+        try {
+            new URL(urlString);
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
     }
 }
