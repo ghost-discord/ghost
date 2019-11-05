@@ -28,14 +28,18 @@ import java.util.concurrent.Executors;
 @Configurable
 public final class CommandDispatcher {
     private final ExecutorService executor;
-    @Autowired private GuildMetaRepository guildRepo;
-    @Autowired private CommandRegistry registry;
+    private final GuildMetaRepository guildRepo;
+    private final CommandRegistry registry;
 
     /**
      * Construct a new CommandDispatcher.
      */
+    @Autowired
     @ReflectiveAccess
-    public CommandDispatcher() {
+    public CommandDispatcher(GuildMetaRepository guildRepo, CommandRegistry registry) {
+        this.guildRepo = guildRepo;
+        this.registry = registry;
+
         // Initialize command registry and thread pool
         executor = Executors.newCachedThreadPool();
     }
