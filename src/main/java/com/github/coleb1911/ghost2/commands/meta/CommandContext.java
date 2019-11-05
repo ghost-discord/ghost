@@ -8,11 +8,14 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.User;
+import discord4j.core.spec.EmbedCreateSpec;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Contains relevant information for when a command is invoked.
@@ -87,11 +90,17 @@ public class CommandContext {
     }
 
     public void replyDirect(String message) {
-        invoker.getPrivateChannel().map(ch -> ch.createMessage(message).subscribe()).subscribe();
+        invoker.getPrivateChannel()
+                .flatMap(ch -> ch.createMessage(message))
+                .subscribe();
+    }
+
+    public Mono<Message> replyEmbed(Consumer<EmbedCreateSpec> consumer) {
+        return channel.createEmbed(consumer);
     }
 
     private List<String> extractArgs(Message message) {
-        String content = message.getContent().orElse("").toLowerCase();
+        String content = message.getContent().orElse("");
         // Arrays.asList returns an immutable list implementation, so we need to wrap it in an actual ArrayList
         return new ArrayList<>(Arrays.asList(content.split("\\p{javaSpaceChar}")));
     }

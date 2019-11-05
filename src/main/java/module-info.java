@@ -1,12 +1,15 @@
 open module ghost2.main {
-    requires java.persistence;
+    requires java.annotation;
     requires java.validation;
+    requires java.persistence;
+    requires spring.web;
+    requires spring.core;
     requires spring.boot;
-    requires spring.boot.autoconfigure;
     requires spring.beans;
-    requires spring.data.commons;
-    requires spring.data.jpa;
     requires spring.context;
+    requires spring.data.jpa;
+    requires spring.data.commons;
+    requires spring.boot.autoconfigure;
     requires org.apache.commons.lang3;
     requires org.apache.httpcomponents.httpclient;
     requires org.apache.httpcomponents.httpcore;
@@ -14,16 +17,15 @@ open module ghost2.main {
     requires org.apache.commons.io;
     requires discord4j.core;
     requires discord4j.rest;
+    requires discord4j.voice;
+    requires lavaplayer;
     requires reactor.core;
     requires org.reactivestreams;
-    requires tinylog;
-    requires owner;
-    requires reflections;
     requires jackson.annotations;
-    requires java.annotation;
-    requires spring.web;
-    requires spring.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
+    requires reflections;
+    requires tinylog;
+    requires owner;
     requires org.jsoup;
 }
