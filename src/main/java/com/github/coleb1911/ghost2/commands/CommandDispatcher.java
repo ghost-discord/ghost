@@ -88,10 +88,14 @@ public final class CommandDispatcher {
         }
 
         // Finally kick off command thread if all checks are passed
-
-        executor.execute(() -> ctx.getChannel()
-                .typeUntil(Mono.fromRunnable(() -> module.invoke(ctx)))
-                .subscribe());
+        executor.execute(() -> {
+            Mono<?> invokeMono = Mono.fromRunnable(() -> module.invoke(ctx));
+            if (module.getInfo().shouldType()) {
+                ctx.getChannel()
+                        .typeUntil(invokeMono)
+                        .subscribe();
+            } else invokeMono.subscribe();
+        });
     }
 
     private boolean checkPerms(final Module module, final CommandContext ctx) {

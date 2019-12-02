@@ -14,7 +14,8 @@ public final class ModuleInvite extends Module {
     public ModuleInvite() {
         super(new ModuleInfo.Builder(ModuleInvite.class)
                 .withName("invite")
-                .withDescription("Generates invite link for the bot"));
+                .withDescription("Generates invite link for the bot")
+                .showTypingIndicator());
     }
 
     @Override

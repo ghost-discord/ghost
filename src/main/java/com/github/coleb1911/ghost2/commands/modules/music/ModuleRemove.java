@@ -13,7 +13,8 @@ public final class ModuleRemove extends Module {
     public ModuleRemove() {
         super(new ModuleInfo.Builder(ModuleRemove.class)
                 .withName("remove")
-                .withDescription("Remove the track at the given index."));
+                .withDescription("Remove the track at the given index.")
+                .showTypingIndicator());
     }
 
     @Override

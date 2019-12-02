@@ -30,7 +30,8 @@ public final class ModuleQueue extends Module {
     public ModuleQueue() {
         super(new ModuleInfo.Builder(ModuleQueue.class)
                 .withName("queue")
-                .withDescription("Show the current tracks in the queue."));
+                .withDescription("Show the current tracks in the queue.")
+                .showTypingIndicator());
     }
 
     @Override

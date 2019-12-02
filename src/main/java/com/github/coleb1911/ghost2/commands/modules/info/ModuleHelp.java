@@ -29,7 +29,8 @@ public final class ModuleHelp extends Module {
     public ModuleHelp() {
         super(new ModuleInfo.Builder(ModuleHelp.class)
                 .withName("help")
-                .withDescription("List commands or get help with a specific command"));
+                .withDescription("List commands or get help with a specific command")
+                .showTypingIndicator());
     }
 
     @Override

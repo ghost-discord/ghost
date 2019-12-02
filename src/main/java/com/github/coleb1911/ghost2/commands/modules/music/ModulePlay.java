@@ -20,7 +20,8 @@ public final class ModulePlay extends Module {
         super(new ModuleInfo.Builder(ModulePlay.class)
                 .withName("play")
                 .withDescription("Play or queue a track.")
-                .withAliases("queueadd", "qa"));
+                .withAliases("queueadd", "qa")
+                .showTypingIndicator());
     }
 
     @Override
