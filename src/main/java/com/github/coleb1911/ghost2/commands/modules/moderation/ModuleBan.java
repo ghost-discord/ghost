@@ -20,7 +20,7 @@ public final class ModuleBan extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         if(ctx.getArgs().isEmpty()) {
-            ctx.reply("Please specify a user.");
+            ctx.replyBlocking("Please specify a user.");
             return;
         }
 
@@ -29,11 +29,11 @@ public final class ModuleBan extends Module {
                 .filter(member -> targetName.equals(member.getDisplayName()))
                 .map(member -> member.ban(spec -> {
                     spec.setReason("Banned by " + ctx.getInvoker().getDisplayName());
-                    ctx.reply(member.getDisplayName() + " was banned.");
+                    ctx.replyBlocking(member.getDisplayName() + " was banned.");
                 }).subscribe())
                 .hasElements()
                 .flatMap(aBoolean -> {
-                    if (!aBoolean) ctx.reply("User not found.");
+                    if (!aBoolean) ctx.replyBlocking("User not found.");
                     return Mono.just(aBoolean);
                 })
                 .subscribe();

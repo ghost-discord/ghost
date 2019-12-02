@@ -70,7 +70,7 @@ public final class ModuleTranslate extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         if (StringUtils.isBlank(API_URL) || StringUtils.isBlank(API_KEY)) {
-            ctx.reply(REPLY_UNCONFIGURED);
+            ctx.replyBlocking(REPLY_UNCONFIGURED);
             return;
         }
 

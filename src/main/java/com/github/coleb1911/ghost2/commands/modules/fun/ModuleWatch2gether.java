@@ -44,13 +44,13 @@ public final class ModuleWatch2gether extends Module {
         try {
             final Watch2getherResponse room = restTemplate.postForObject(W2G_URL, new HttpEntity<>(new ModuleWatch2gether.Watch2getherRequest()), ModuleWatch2gether.Watch2getherResponse.class);
             if (room == null) {
-                ctx.reply("Error trying to create a Watch2Gether room.");
+                ctx.replyBlocking("Error trying to create a Watch2Gether room.");
                 return;
             }
 
-            ctx.reply(room.getUrl());
+            ctx.replyBlocking(room.getUrl());
         } catch (HttpStatusCodeException exception) {
-            ctx.reply("Error trying to retrieve the Watch2Gether room.");
+            ctx.replyBlocking("Error trying to retrieve the Watch2Gether room.");
         }
     }
 

@@ -98,13 +98,13 @@ public final class CommandDispatcher {
         // Check user's permissions
         PermissionSet invokerPerms = ctx.getInvoker().getBasePermissions().block();
         if (null == invokerPerms) {
-            ctx.reply(Module.REPLY_GENERAL_ERROR);
+            ctx.replyBlocking(Module.REPLY_GENERAL_ERROR);
             return false;
         }
         if (!invokerPerms.contains(Permission.ADMINISTRATOR)) {
             for (Permission required : module.getInfo().getUserPermissions()) {
                 if (!invokerPerms.contains(required)) {
-                    ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
+                    ctx.replyBlocking(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
                     return false;
                 }
             }
@@ -116,20 +116,20 @@ public final class CommandDispatcher {
                 (module.getInfo().getType() == CommandType.OPERATOR) &&
                 (ctx.getInvoker().getId().asLong() != References.getConfig().operatorId())) {
 
-            ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
+            ctx.replyBlocking(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
             return false;
         }
 
         // Check bot's permissions
         PermissionSet botPerms = ctx.getSelf().getBasePermissions().block();
         if (null == botPerms) {
-            ctx.reply(Module.REPLY_GENERAL_ERROR);
+            ctx.replyBlocking(Module.REPLY_GENERAL_ERROR);
             return false;
         }
         if (!botPerms.contains(Permission.ADMINISTRATOR)) {
             for (Permission required : module.getInfo().getBotPermissions()) {
                 if (!botPerms.contains(required)) {
-                    ctx.reply(Module.REPLY_INSUFFICIENT_PERMISSIONS_BOT);
+                    ctx.replyBlocking(Module.REPLY_INSUFFICIENT_PERMISSIONS_BOT);
                     return false;
                 }
             }

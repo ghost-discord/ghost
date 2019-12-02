@@ -9,9 +9,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-import static com.github.coleb1911.ghost2.commands.meta.Module.REACT_OK;
-import static com.github.coleb1911.ghost2.commands.meta.Module.REACT_WARNING;
-
 public final class MusicUtils {
     private static final String REPLY_BUSY = "I'm already playing music somewhere else.";
     private static final String REPLY_NO_PERMISSIONS = "I don't have permission to use your current voice channel.";
@@ -32,10 +29,10 @@ public final class MusicUtils {
     public static Mono<MusicService> fetchMusicService(CommandContext ctx) {
         return MusicUtils.getVoiceChannel(ctx.getInvoker())
                 // Reply and complete if no channel found
-                .switchIfEmpty(Mono.fromRunnable(() -> ctx.reply(REPLY_NO_CHANNEL)))
+                .switchIfEmpty(Mono.fromRunnable(() -> ctx.replyBlocking(REPLY_NO_CHANNEL)))
                 // Reply and complete if permissions are insufficient
-                .filter(channel -> MusicUtils.checkVoicePermissions(ctx.getInvoker(), channel))
-                .switchIfEmpty(Mono.fromRunnable(() -> ctx.reply(REPLY_NO_PERMISSIONS)))
+                .filterWhen(channel -> MusicUtils.checkVoicePermissions(ctx.getInvoker(), channel))
+                .switchIfEmpty(Mono.fromRunnable(() -> ctx.replyBlocking(REPLY_NO_PERMISSIONS)))
                 // Return music service
                 .flatMap(channel -> MusicServiceManager.fetch(ctx.getGuild().getId(), channel.getId()));
     }
@@ -56,13 +53,11 @@ public final class MusicUtils {
      * Checks if the given {@linkplain Member} has both {@link Permission#CONNECT}
      * and {@link Permission#SPEAK} in the given {@linkplain VoiceChannel}.
      */
-    @SuppressWarnings("ConstantConditions")
-    private static boolean checkVoicePermissions(Member member, VoiceChannel channel) {
+    private static Mono<Boolean> checkVoicePermissions(Member member, VoiceChannel channel) {
         return channel.getEffectivePermissions(member.getId())
                 .map(permissions -> permissions.contains(Permission.SPEAK) &&
                         permissions.contains(Permission.CONNECT))
                 .filter(Objects::nonNull)
-                .defaultIfEmpty(false)
-                .block();
+                .defaultIfEmpty(false);
     }
 }

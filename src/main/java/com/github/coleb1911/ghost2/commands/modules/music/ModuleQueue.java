@@ -41,7 +41,7 @@ public final class ModuleQueue extends Module {
                 .collectList()
                 .subscribe(tracks -> {
                     if (tracks.isEmpty()) {
-                        ctx.reply("Queue is empty.");
+                        ctx.replyBlocking("Queue is empty.");
                         return;
                     }
 
@@ -60,7 +60,7 @@ public final class ModuleQueue extends Module {
             this.ctx = ctx;
 
             if (tracks.isEmpty()) {
-                ctx.reply("Queue is empty.");
+                ctx.replyBlocking("Queue is empty.");
                 return;
             }
 

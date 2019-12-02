@@ -20,7 +20,7 @@ public final class ModuleMute extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         if(ctx.getArgs().isEmpty()) {
-            ctx.reply("Please specify a user.");
+            ctx.replyBlocking("Please specify a user.");
             return;
         }
 
@@ -29,11 +29,11 @@ public final class ModuleMute extends Module {
                 .filter(member -> targetName.equals(member.getDisplayName()))
                 .map(member -> member.edit(spec -> {
                     spec.setMute(true);
-                    ctx.reply(member.getDisplayName() + " is now muted.");
+                    ctx.replyBlocking(member.getDisplayName() + " is now muted.");
                 }).subscribe())
                 .hasElements()
                 .flatMap(aBoolean -> {
-                    if (!aBoolean) ctx.reply("User not found.");
+                    if (!aBoolean) ctx.replyBlocking("User not found.");
                     return Mono.just(aBoolean);
                 })
                 .subscribe();

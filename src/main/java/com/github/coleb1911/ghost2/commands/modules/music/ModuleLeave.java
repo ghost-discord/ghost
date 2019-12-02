@@ -21,7 +21,7 @@ public final class ModuleLeave extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         if (!MusicServiceManager.serviceExists(ctx.getGuild().getId())) {
-            ctx.reply("I'm not playing music right now.");
+            ctx.replyBlocking("I'm not playing music right now.");
             return;
         }
 

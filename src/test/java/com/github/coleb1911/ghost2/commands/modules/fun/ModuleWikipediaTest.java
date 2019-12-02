@@ -8,15 +8,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ModuleWikipediaTest {
     WireMockServer wireMockServer;
@@ -74,7 +79,7 @@ public class ModuleWikipediaTest {
         wikiModule.invoke(mockContext);
 
         ArgumentCaptor<String> reply = ArgumentCaptor.forClass(String.class);
-        verify(mockContext).reply(reply.capture());
+        verify(mockContext).replyBlocking(reply.capture());
         assertEquals("Did you mean \"aztecs\"?", reply.getValue());
 
 

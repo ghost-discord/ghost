@@ -26,7 +26,7 @@ public final class ModulePlay extends Module {
     @Override
     public void invoke(@NotNull CommandContext ctx) {
         if (ctx.getArgs().isEmpty()) {
-            ctx.reply("Please provide a link to a valid track.");
+            ctx.replyBlocking("Please provide a link to a valid track.");
             return;
         }
 
@@ -45,8 +45,8 @@ public final class ModulePlay extends Module {
         MusicUtils.fetchMusicService(ctx)
                 .flatMap(service -> service.loadTrack(source.get()))
                 .subscribe(result -> {
-                    if (title.get() != null) ctx.reply("Queued **" + title + "**.");
-                    else ctx.reply(result.message);
+                    if (title.get() != null) ctx.replyBlocking("Queued **" + title + "**.");
+                    else ctx.replyBlocking(result.message);
                 });
     }
 

@@ -42,11 +42,11 @@ public final class ModuleAutoRole extends Module {
      */
     private static void enableConfirmation(final CommandContext ctx, final GuildMeta meta) {
         if (meta.getAutoRoleConfirmationEnabled()) {
-            ctx.reply("Autorole confirmation is already enabled.");
+            ctx.replyBlocking("Autorole confirmation is already enabled.");
             return;
         }
         meta.setAutoRoleConfirmationEnabled(true);
-        ctx.reply("Autorole confirmation enabled.");
+        ctx.replyBlocking("Autorole confirmation enabled.");
     }
 
     /**
@@ -57,11 +57,11 @@ public final class ModuleAutoRole extends Module {
      */
     private static void disableConfirmation(final CommandContext ctx, final GuildMeta meta) {
         if (!meta.getAutoRoleConfirmationEnabled()) {
-            ctx.reply("Autorole confirmation is already disabled.");
+            ctx.replyBlocking("Autorole confirmation is already disabled.");
             return;
         }
         meta.setAutoRoleConfirmationEnabled(false);
-        ctx.reply("Autorole confirmation disabled.");
+        ctx.replyBlocking("Autorole confirmation disabled.");
     }
 
     /**
@@ -75,19 +75,19 @@ public final class ModuleAutoRole extends Module {
         Role highest = ctx.getSelf().getHighestRole().block();
 
         if (highest == null || role.getRawPosition() > highest.getRawPosition()) {
-            ctx.reply("That role is higher than my highest role. I can't use it.");
+            ctx.replyBlocking("That role is higher than my highest role. I can't use it.");
             return;
         }
 
         meta.setAutoRoleId(role.getId().asLong());
-        ctx.reply("Autorole set to " + role.getMention() + ".");
+        ctx.replyBlocking("Autorole set to " + role.getMention() + ".");
     }
 
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
         // Check for arguments
         if (ctx.getArgs().isEmpty() || ctx.getMessage().mentionsEveryone()) {
-            ctx.reply(REPLY_INVALID_ARGS);
+            ctx.replyBlocking(REPLY_INVALID_ARGS);
             return;
         }
 
@@ -102,7 +102,7 @@ public final class ModuleAutoRole extends Module {
                 break;
             case ARG_SET_CONFIRM_ENABLED:
                 if (ctx.getArgs().size() < 2) {
-                    ctx.reply(REPLY_INVALID_CONFIRM_SETTING);
+                    ctx.replyBlocking(REPLY_INVALID_CONFIRM_SETTING);
                     return;
                 }
                 switch (ctx.getArgs().get(1)) {
@@ -113,7 +113,7 @@ public final class ModuleAutoRole extends Module {
                         disableConfirmation(ctx, meta);
                         break;
                     default:
-                        ctx.reply(REPLY_INVALID_CONFIRM_SETTING);
+                        ctx.replyBlocking(REPLY_INVALID_CONFIRM_SETTING);
                         break;
                 }
                 break;
@@ -134,16 +134,16 @@ public final class ModuleAutoRole extends Module {
      */
     private void enableAutoRole(final CommandContext ctx, final GuildMeta meta) {
         if (meta.getAutoRoleId() == null) {
-            ctx.reply("Please set a role for autorole before enabling it.");
+            ctx.replyBlocking("Please set a role for autorole before enabling it.");
             return;
         }
 
         if (meta.getAutoRoleEnabled()) {
-            ctx.reply("Autorole is already enabled.");
+            ctx.replyBlocking("Autorole is already enabled.");
             return;
         }
         meta.setAutoRoleEnabled(true);
-        ctx.reply("Autorole enabled.");
+        ctx.replyBlocking("Autorole enabled.");
     }
 
     /**
@@ -154,10 +154,10 @@ public final class ModuleAutoRole extends Module {
      */
     private void disableAutoRole(final CommandContext ctx, final GuildMeta meta) {
         if (!meta.getAutoRoleEnabled()) {
-            ctx.reply("Autorole is already disabled.");
+            ctx.replyBlocking("Autorole is already disabled.");
             return;
         }
         meta.setAutoRoleEnabled(false);
-        ctx.reply("Autorole disabled.");
+        ctx.replyBlocking("Autorole disabled.");
     }
 }

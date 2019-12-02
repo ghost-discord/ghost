@@ -37,18 +37,18 @@ public final class ModuleConfirm extends Module {
             Role role = ctx.getGuild().getRoleById(Snowflake.of(meta.getAutoRoleId())).block();
             Role highest = ctx.getSelf().getHighestRole().block();
             if (null == role || null == highest || role.getRawPosition() > highest.getRawPosition()) {
-                ctx.reply("Autorole is configured to use an invalid role. Notify an admin.");
+                ctx.replyBlocking("Autorole is configured to use an invalid role. Notify an admin.");
                 return;
             }
 
             if (!ctx.getInvoker().getRoleIds().contains(role.getId())) {
                 ctx.getInvoker().addRole(role.getId(), "Autorole").subscribe();
-                ctx.replyDirect("You have received your role.");
+                ctx.replyDirectBlocking("You have received your role.");
             } else {
-                ctx.replyDirect("You already have " + ctx.getGuild().getName() + "'s base role.");
+                ctx.replyDirectBlocking("You already have " + ctx.getGuild().getName() + "'s base role.");
             }
         } else {
-            ctx.replyDirect("Autorole confirmation is disabled. Your roles have not changed.");
+            ctx.replyDirectBlocking("Autorole confirmation is disabled. Your roles have not changed.");
         }
     }
 }

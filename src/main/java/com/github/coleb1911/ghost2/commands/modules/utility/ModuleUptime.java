@@ -18,6 +18,6 @@ public final class ModuleUptime extends Module {
 
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
-        ctx.reply(References.uptime());
+        ctx.replyBlocking(References.uptime());
     }
 }

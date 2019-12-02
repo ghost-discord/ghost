@@ -73,14 +73,14 @@ public final class ModuleWikipedia extends Module {
                 })).block();
             } else {
                 if (searchInfo.hasSuggestions()) {
-                    ctx.reply("Did you mean \"" + searchInfo.getSuggestion() + "\"?");
+                    ctx.replyBlocking("Did you mean \"" + searchInfo.getSuggestion() + "\"?");
                 } else {
-                    ctx.reply("Couldn't find anything about \"" + searchString + "\" on wikipedia.");
+                    ctx.replyBlocking("Couldn't find anything about \"" + searchString + "\" on wikipedia.");
                 }
             }
         } catch (RestClientException ex) {
             response = "Error: " + ex.toString();
-            ctx.reply(response);
+            ctx.replyBlocking(response);
         }
     }
 
