@@ -2,11 +2,14 @@ package com.github.coleb1911.ghost2;
 
 import org.aeonbits.owner.Accessible;
 import org.aeonbits.owner.Config;
+import org.aeonbits.owner.Config.LoadPolicy;
+import org.aeonbits.owner.Config.LoadType;
 import org.aeonbits.owner.Config.Sources;
 import org.aeonbits.owner.Mutable;
 import org.aeonbits.owner.Reloadable;
 
-@Sources("classpath:ghost.properties")
+@LoadPolicy(LoadType.MERGE)
+@Sources({"classpath:ghost.properties", "system:env"})
 public interface GhostConfig extends Config, Accessible, Mutable, Reloadable {
     @Key("ghost.token")
     String token();
@@ -18,5 +21,4 @@ public interface GhostConfig extends Config, Accessible, Mutable, Reloadable {
     @Key("ghost.w2g_api_key")
     @DefaultValue("ujww234232ewegwgwef4d")
     String w2g_api_key();
-
 }
