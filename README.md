@@ -1,4 +1,4 @@
-![ghost2](https://github.com/cbryant02/cbryant02.github.io/raw/master/media/ghost2_banner.png)
+![ghost2](https://cbryant02.github.io/media/ghost2-banner.png)
 
 # ghost2 [![Build Status](https://travis-ci.org/ghost2-discord/ghost2.svg?branch=master)](https://travis-ci.org/ghost2-discord/ghost2) [![Maintainability](https://api.codeclimate.com/v1/badges/9cbad0d3562a8670ec20/maintainability)](https://codeclimate.com/github/cbryant02/ghost2/maintainability) [![Code Helpers](https://www.codetriage.com/cbryant02/ghost2/badges/users.svg)](https://www.codetriage.com/cbryant02/ghost2) [![Gitter](https://badges.gitter.im/ghost2-dev/community.svg)](https://gitter.im/ghost2-dev/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
