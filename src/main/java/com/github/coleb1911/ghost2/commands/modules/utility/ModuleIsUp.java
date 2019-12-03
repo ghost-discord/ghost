@@ -21,20 +21,20 @@ public final class ModuleIsUp extends Module {
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
         if (ctx.getArgs().isEmpty()) {
-            ctx.reply("Please specify a host or IP.");
+            ctx.replyBlocking("Please specify a host or IP.");
         }
 
         try {
             final InetAddress address = InetAddress.getByName(ctx.getArgs().get(0));
             if (address.isReachable(10000)) {
-                ctx.reply("Host is up!");
+                ctx.replyBlocking("Host is up!");
             } else {
-                ctx.reply("Host is down!");
+                ctx.replyBlocking("Host is down!");
             }
         } catch (UnknownHostException e) {
-            ctx.reply("Could not resolve host");
+            ctx.replyBlocking("Could not resolve host");
         } catch (IOException e) {
-            ctx.reply("Host is down!");
+            ctx.replyBlocking("Host is down!");
         }
     }
 }

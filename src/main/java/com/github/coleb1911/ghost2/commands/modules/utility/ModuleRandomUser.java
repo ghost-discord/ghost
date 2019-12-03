@@ -65,7 +65,7 @@ public final class ModuleRandomUser extends Module {
 
         if (users != null && !users.isEmpty()) {
             User randomPick = users.get(RNG.nextInt(users.size()));
-            ctx.reply("The random user is " + randomPick.getUsername());
-        } else ctx.reply("There are no users to pick from");
+            ctx.replyBlocking("The random user is " + randomPick.getUsername());
+        } else ctx.replyBlocking("There are no users to pick from");
     }
 }

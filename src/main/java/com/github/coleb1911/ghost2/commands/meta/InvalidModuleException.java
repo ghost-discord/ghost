@@ -90,7 +90,7 @@ public class InvalidModuleException extends RuntimeException {
         INVALID_BOT_PERMISSIONS("Module has a null bot permission list"),
         INVALID_USER_PERMISSIONS("Module has a null user permission list"),
         INVALID_TYPE("Module has a null type"),
-        INVALID_ALIASES("Module has a null alias array");
+        INVALID_ALIASES("Module has a null alias list");
 
         private final String message;
 

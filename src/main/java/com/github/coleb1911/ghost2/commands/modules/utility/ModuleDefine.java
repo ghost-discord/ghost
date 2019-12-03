@@ -57,12 +57,12 @@ public final class ModuleDefine extends Module {
         try {
             specConsumer = createDefinitionEmbed(word);
         } catch (HttpServerErrorException e) {
-            ctx.reply(REPLY_SERVER_ERROR + "(" + e.getStatusCode().toString() + ")");
+            ctx.replyBlocking(REPLY_SERVER_ERROR + "(" + e.getStatusCode().toString() + ")");
             return;
         }
 
         if (specConsumer == null) {
-            ctx.reply("No definition found for " + word + ".");
+            ctx.replyBlocking("No definition found for " + word + ".");
         } else {
             ctx.getChannel().createEmbed(specConsumer).block();
         }

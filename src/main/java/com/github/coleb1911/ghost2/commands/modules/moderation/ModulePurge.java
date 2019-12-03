@@ -23,7 +23,7 @@ public final class ModulePurge extends Module {
     public void invoke(@NotNull final CommandContext ctx) {
         // Check for arguments
         if (ctx.getArgs().isEmpty()) {
-            ctx.reply("Please specify a number of messages to purge.");
+            ctx.replyBlocking("Please specify a number of messages to purge.");
             return;
         }
 
@@ -32,7 +32,7 @@ public final class ModulePurge extends Module {
         try {
             count = Integer.parseInt(ctx.getArgs().get(0));
         } catch (NumberFormatException e) {
-            ctx.reply(Module.REPLY_ARGUMENT_INVALID);
+            ctx.replyBlocking(Module.REPLY_ARGUMENT_INVALID);
             return;
         }
 

@@ -29,7 +29,8 @@ public final class ModuleHelp extends Module {
     public ModuleHelp() {
         super(new ModuleInfo.Builder(ModuleHelp.class)
                 .withName("help")
-                .withDescription("List commands or get help with a specific command"));
+                .withDescription("List commands or get help with a specific command")
+                .showTypingIndicator());
     }
 
     @Override
@@ -50,7 +51,7 @@ public final class ModuleHelp extends Module {
         // Fetch & null-check CommandInfo
         ModuleInfo info = registry.getInfo(ctx.getArgs().get(0));
         if (null == info) {
-            ctx.reply(Module.REPLY_COMMAND_INVALID);
+            ctx.replyBlocking(Module.REPLY_COMMAND_INVALID);
             return;
         }
 

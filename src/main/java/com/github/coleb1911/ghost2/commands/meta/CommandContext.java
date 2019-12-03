@@ -85,18 +85,67 @@ public class CommandContext {
         return roleMentions;
     }
 
-    public void reply(String message) {
-        channel.createMessage(message).subscribe();
+    /**
+     * Reply to a command.
+     *
+     * @param text Reply message content
+     * @return {@linkplain Mono} containing the reply {@linkplain Message}
+     */
+    public Mono<Message> reply(String text) {
+        return channel.createMessage(text);
     }
 
-    public void replyDirect(String message) {
-        invoker.getPrivateChannel()
-                .flatMap(ch -> ch.createMessage(message))
-                .subscribe();
+    /**
+     * Reply to a command via direct message.
+     *
+     * @param text Reply message content
+     * @return {@linkplain Mono} containing the reply {@linkplain Message}
+     */
+    public Mono<Message> replyDirect(String text) {
+        return invoker.getPrivateChannel()
+                .flatMap(ch -> ch.createMessage(text));
     }
 
+    /**
+     * Reply to a command with an embed.
+     *
+     * @param consumer Embed spec consumer
+     * @return {@linkplain Mono} containing the reply {@linkplain Message}
+     * @see <a href="https://github.com/Discord4J/Discord4J/wiki/Specs">Specs</a>
+     */
     public Mono<Message> replyEmbed(Consumer<EmbedCreateSpec> consumer) {
         return channel.createEmbed(consumer);
+    }
+
+    /**
+     * Reply to a command. Blocks until finished.
+     *
+     * @param text Reply message content
+     * @return The reply {@linkplain Message}
+     */
+    public Message replyBlocking(String text) {
+        return reply(text).block();
+    }
+
+    /**
+     * Reply to a command via direct message. Blocks until finished.
+     *
+     * @param text Reply message content
+     * @return The reply {@linkplain Message}
+     */
+    public Message replyDirectBlocking(String text) {
+        return replyDirect(text).block();
+    }
+
+    /**
+     * Reply to a command with an embed. Blocks until finished.
+     *
+     * @param consumer Embed spec consumer
+     * @return The reply {@linkplain Message}
+     * @see <a href="https://github.com/Discord4J/Discord4J/wiki/Specs">Specs</a>
+     */
+    public Message replyEmbedBlocking(Consumer<EmbedCreateSpec> consumer) {
+        return replyEmbed(consumer).block();
     }
 
     private List<String> extractArgs(Message message) {

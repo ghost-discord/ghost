@@ -31,14 +31,22 @@ public final class ModuleInfo {
     private final PermissionSet userPermissions;
     private final CommandType type;
     private final List<String> aliases;
+    private final boolean showTypingIndicator;
 
-    private ModuleInfo(String name, String description, PermissionSet botPermissions, PermissionSet userPermissions, CommandType type, String[] aliases) {
+    private ModuleInfo(String name,
+                       String description,
+                       PermissionSet botPermissions,
+                       PermissionSet userPermissions,
+                       CommandType type,
+                       String[] aliases,
+                       boolean showTypingIndicator) {
         this.name = name.toLowerCase();
         this.description = description;
         this.botPermissions = botPermissions;
         this.userPermissions = userPermissions;
         this.type = type;
         this.aliases = Arrays.stream(aliases).map(String::toLowerCase).collect(Collectors.toUnmodifiableList());
+        this.showTypingIndicator = showTypingIndicator;
     }
 
     /**
@@ -84,6 +92,13 @@ public final class ModuleInfo {
     }
 
     /**
+     * @return Whether or not this command should show a typing indicator during execution
+     */
+    public boolean shouldType() {
+        return showTypingIndicator;
+    }
+
+    /**
      * The builder class for ModuleInfo.
      * <p>
      * Every {@link Module} subclass must construct themselves with a valid ModuleInfo in order to be considered a valid command.
@@ -111,6 +126,7 @@ public final class ModuleInfo {
         @NotNull private PermissionSet botPermissions;
         @NotNull private PermissionSet userPermissions;
         @NotNull private String[] aliases;
+        @NotNull private boolean showTypingIndicator = false;
 
         /**
          * Constructs a new CommandInfo builder.<br>
@@ -201,13 +217,28 @@ public final class ModuleInfo {
         }
 
         /**
+         * Make this Module show a typing indicator while it is executing. Good for
+         * providing feedback during long-running commands.
+         * <p>
+         * Note that because of the way the Discord API handles typing indicators,
+         * your command should send a message when it is done in order to hide the
+         * indicator. If not, it'll persist for at least 10 seconds before it disappears.
+         *
+         * @return this Builder
+         */
+        public Builder showTypingIndicator() {
+            this.showTypingIndicator = true;
+            return this;
+        }
+
+        /**
          * Builds the {@code CommandInfo}.
          *
          * @return A {@code CommandInfo} object built from the parameters provided to this Builder
          */
         ModuleInfo build() {
             checkValid();
-            return new ModuleInfo(name, description, botPermissions, userPermissions, type, aliases);
+            return new ModuleInfo(name, description, botPermissions, userPermissions, type, aliases, showTypingIndicator);
         }
 
         /**

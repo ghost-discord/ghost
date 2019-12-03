@@ -27,11 +27,11 @@ public final class ModuleScreenshare extends Module {
                 .defaultIfEmpty(Optional.empty())
                 .subscribe(opt -> {
                     if (opt.isEmpty()) {
-                        ctx.reply(REPLY_NO_VOICE_CHANNEL);
+                        ctx.replyBlocking(REPLY_NO_VOICE_CHANNEL);
                         return;
                     }
 
-                    ctx.reply("https://discordapp.com/channels/" +
+                    ctx.replyBlocking("https://discordapp.com/channels/" +
                             ctx.getGuild().getId().asString() +
                             "/" +
                             opt.get().asString());

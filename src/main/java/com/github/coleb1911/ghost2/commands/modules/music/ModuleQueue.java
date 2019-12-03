@@ -30,7 +30,8 @@ public final class ModuleQueue extends Module {
     public ModuleQueue() {
         super(new ModuleInfo.Builder(ModuleQueue.class)
                 .withName("queue")
-                .withDescription("Show the current tracks in the queue."));
+                .withDescription("Show the current tracks in the queue.")
+                .showTypingIndicator());
     }
 
     @Override
@@ -41,7 +42,7 @@ public final class ModuleQueue extends Module {
                 .collectList()
                 .subscribe(tracks -> {
                     if (tracks.isEmpty()) {
-                        ctx.reply("Queue is empty.");
+                        ctx.replyBlocking("Queue is empty.");
                         return;
                     }
 
@@ -60,7 +61,7 @@ public final class ModuleQueue extends Module {
             this.ctx = ctx;
 
             if (tracks.isEmpty()) {
-                ctx.reply("Queue is empty.");
+                ctx.replyBlocking("Queue is empty.");
                 return;
             }
 

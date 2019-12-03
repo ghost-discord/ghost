@@ -13,7 +13,8 @@ public final class ModuleRemove extends Module {
     public ModuleRemove() {
         super(new ModuleInfo.Builder(ModuleRemove.class)
                 .withName("remove")
-                .withDescription("Remove the track at the given index."));
+                .withDescription("Remove the track at the given index.")
+                .showTypingIndicator());
     }
 
     @Override
@@ -27,7 +28,7 @@ public final class ModuleRemove extends Module {
         try {
             index = Integer.parseInt(ctx.getArgs().get(0));
         } catch (NumberFormatException e) {
-            ctx.reply("That's not a number.");
+            ctx.replyBlocking("That's not a number.");
             return;
         }
 
@@ -35,10 +36,10 @@ public final class ModuleRemove extends Module {
                 .flatMap(svc -> svc.remove(index-1))
                 .subscribe(success -> {
                     if (success) {
-                        ctx.reply("Removed track " + index + ".");
+                        ctx.replyBlocking("Removed track " + index + ".");
                         return;
                     }
-                    ctx.reply("Invalid track number.");
+                    ctx.replyBlocking("Invalid track number.");
                 });
     }
 }

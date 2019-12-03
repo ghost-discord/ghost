@@ -42,7 +42,7 @@ public final class ModuleXKCD extends Module {
         if (ctx.getArgs().isEmpty()) {
             final XKCDComic latest = TEMPLATE.getForObject(BASE_URL + "info.0.json", XKCDComic.class);
             if (latest == null) {
-                ctx.reply(REPLY_FETCH_ERROR);
+                ctx.replyBlocking(REPLY_FETCH_ERROR);
                 return;
             }
 
@@ -54,7 +54,7 @@ public final class ModuleXKCD extends Module {
         try {
             final XKCDComic comic = TEMPLATE.getForObject(url + "/info.0.json", XKCDComic.class);
             if (comic == null) {
-                ctx.reply(REPLY_FETCH_ERROR);
+                ctx.replyBlocking(REPLY_FETCH_ERROR);
                 return;
             }
 
@@ -66,7 +66,7 @@ public final class ModuleXKCD extends Module {
                     .setUrl(BASE_URL + comic.getNum())
             ).subscribe();
         } catch (HttpStatusCodeException exception) {
-            ctx.reply(REPLY_FETCH_ERROR);
+            ctx.replyBlocking(REPLY_FETCH_ERROR);
         }
     }
 

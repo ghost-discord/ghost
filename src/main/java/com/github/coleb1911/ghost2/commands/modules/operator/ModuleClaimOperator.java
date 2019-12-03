@@ -50,7 +50,7 @@ public final class ModuleClaimOperator extends Module {
         String key = generateRandomString();
 
         // Log key and prompt user for it
-        ctx.reply(REPLY_PROMPT);
+        ctx.replyBlocking(REPLY_PROMPT);
         Logger.info("Your key: " + key);
 
         // Listen for & validate key
@@ -62,7 +62,7 @@ public final class ModuleClaimOperator extends Module {
                 .take(1)
                 .doOnNext(event -> {
                     if (event.getMessage().getContent().orElse("").equals(key)) {
-                        ctx.reply(REPLY_VALID);
+                        ctx.replyBlocking(REPLY_VALID);
                         GhostConfig cfg = References.getConfig();
                         cfg.setProperty("ghost.operatorid", event.getMember().orElseThrow().getId().asString());
                         URI cfgUri;
@@ -77,7 +77,7 @@ public final class ModuleClaimOperator extends Module {
                         }
                     }
                 })
-                .timeout(Duration.of(30L, ChronoUnit.SECONDS), s -> ctx.reply(REPLY_TIMEOUT))
+                .timeout(Duration.of(30L, ChronoUnit.SECONDS), s -> ctx.replyBlocking(REPLY_TIMEOUT))
                 .blockFirst();
 
         // Reload configuration

@@ -17,6 +17,6 @@ public final class ModulePing extends Module {
 
     @Override
     public void invoke(@NotNull final CommandContext ctx) {
-        ctx.reply("Pong!");
+        ctx.replyBlocking("Pong!");
     }
 }
