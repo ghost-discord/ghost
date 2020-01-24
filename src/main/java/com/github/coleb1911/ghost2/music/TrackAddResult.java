@@ -1,5 +1,7 @@
 package com.github.coleb1911.ghost2.music;
 
+import reactor.core.publisher.Mono;
+
 public enum TrackAddResult {
     // Single track, immediate play
     PLAYING("Playing track."),
@@ -12,9 +14,21 @@ public enum TrackAddResult {
     FULL("The queue is full."),
     FAILED("An error occurred. Please try again.");
 
-    public final String message;
+    public String message;
+    public String reason = null;
 
     TrackAddResult(final String message) {
         this.message = message;
+    }
+
+    public static Mono<TrackAddResult> failedWithReason(Throwable reason) {
+        return failedWithReason(reason.getMessage());
+    }
+
+    public static Mono<TrackAddResult> failedWithReason(String reason) {
+        TrackAddResult r = FAILED;
+        r.reason = reason;
+        r.message += (" (Reason: `" + reason + "`)");
+        return Mono.just(r);
     }
 }

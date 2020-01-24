@@ -36,7 +36,7 @@ public final class TrackQueue extends AudioEventAdapter {
                 }
             }
             return TrackAddResult.FULL;
-        }).onErrorReturn(TrackAddResult.FAILED);
+        }).onErrorResume(TrackAddResult::failedWithReason);
     }
 
     Mono<TrackAddResult> addAll(List<AudioTrack> tracks) {
@@ -47,17 +47,14 @@ public final class TrackQueue extends AudioEventAdapter {
                     .collectList()
                     .block();
 
-            if(tracks.size() > MAX_SIZE) return TrackAddResult.MQ_QUEUED_SOME;
+            if (tracks.size() > MAX_SIZE) return TrackAddResult.MQ_QUEUED_SOME;
 
             for (TrackAddResult s : stats) {
-                if (s.equals(TrackAddResult.FULL) ||
-                        s.equals(TrackAddResult.FAILED)) {
-                    return TrackAddResult.MQ_QUEUED_SOME;
-                }
+                if (s.equals(TrackAddResult.FULL)) return TrackAddResult.MQ_QUEUED_SOME;
+                if (s.equals(TrackAddResult.FAILED)) return s;
             }
-
             return TrackAddResult.MQ_QUEUED_ALL;
-        }).onErrorReturn(TrackAddResult.FAILED);
+        }).onErrorResume(TrackAddResult::failedWithReason);
     }
 
     Mono<Boolean> shuffle() {
@@ -74,7 +71,7 @@ public final class TrackQueue extends AudioEventAdapter {
     Mono<Boolean> remove(int index) {
         return Mono.fromCallable(() -> {
             Optional<AudioTrack> trackAtIndex = queue.stream().skip(index).findFirst();
-            if(trackAtIndex.isEmpty()) return false;
+            if (trackAtIndex.isEmpty()) return false;
             return queue.remove(trackAtIndex.get());
         }).onErrorReturn(false);
     }
@@ -85,6 +82,10 @@ public final class TrackQueue extends AudioEventAdapter {
 
     Flux<AudioTrack> getTracks() {
         return Flux.fromIterable(List.copyOf(queue));
+    }
+
+    boolean isEmpty() {
+        return queue.isEmpty();
     }
 
     void destroy() {

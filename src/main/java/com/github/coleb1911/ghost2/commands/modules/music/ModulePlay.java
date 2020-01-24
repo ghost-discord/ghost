@@ -5,13 +5,13 @@ import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.music.MusicUtils;
+import com.github.coleb1911.ghost2.music.TrackAddResult;
 import com.github.coleb1911.ghost2.music.youtube.YoutubeScrapeSearchProvider;
 import com.github.coleb1911.ghost2.music.youtube.YoutubeSearchResult;
 
 import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModulePlay extends Module {
 
@@ -32,31 +32,44 @@ public final class ModulePlay extends Module {
         }
 
         final String arg = ctx.getArgs().get(0);
-        final AtomicReference<String> source = new AtomicReference<>();
-        final AtomicReference<String> title = new AtomicReference<>();
+        final YoutubeSearchResult searchResult;
         if (isUrlValid(arg)) {
-            source.set(arg);
+            searchResult = new YoutubeSearchResult(arg, arg);
         } else {
             String term = String.join(" ", ctx.getArgs());
-            YoutubeSearchResult result = new YoutubeScrapeSearchProvider().search(term);
-            source.set(result.uri);
-            title.set(result.title);
+            searchResult = new YoutubeScrapeSearchProvider().search(term);
         }
 
         MusicUtils.fetchMusicService(ctx)
-                .flatMap(service -> service.loadTrack(source.get()))
-                .subscribe(result -> {
-                    if (title.get() != null) ctx.replyBlocking("Queued **" + title + "**.");
-                    else ctx.replyBlocking(result.message);
+                .flatMap(service -> service.loadTrack(searchResult.uri))
+                .subscribe(loadResult -> {
+                    if (loadResult == TrackAddResult.FAILED) ctx.replyBlocking(loadResult.message);
+                    else if (searchResult != null) ctx.replyEmbedBlocking(spec -> {
+                        spec.setTitle(searchResult.title);
+                        spec.setUrl(searchResult.uri);
+                        if (searchResult.isRich) {
+                            spec.setDescription(searchResult.description);
+                            spec.setThumbnail(searchResult.thumbnailUri);
+                        } else {
+                            spec.setDescription("Queued track.");
+                            spec.setThumbnail(getThumbnailUri(searchResult.uri));
+                        }
+                    });
+                    else ctx.replyBlocking(loadResult.message);
                 });
     }
 
     private boolean isUrlValid(String urlString) {
         try {
             new URL(urlString);
-            return true;
+            return urlString.matches(".+v=.+|.+list=.+");
         } catch (MalformedURLException e) {
             return false;
         }
+    }
+
+    private String getThumbnailUri(String urlString) {
+        final String id = urlString.split("v=|list=")[1];
+        return "https://img.youtube.com/vi/" + id + "/0.jpg";
     }
 }
