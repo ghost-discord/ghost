@@ -14,11 +14,7 @@ public interface GhostConfig extends Config, Accessible, Mutable, Reloadable {
     @Key("ghost.token")
     String token();
 
-    @Key("ghost.operatorid")
-    @DefaultValue("-1")
-    Long operatorId();
-
-    @Key("ghost.w2g_api_key")
+    @Key("ghost.keys.w2g-api-key")
     @DefaultValue("ujww234232ewegwgwef4d")
-    String w2g_api_key();
+    String w2gApiKey();
 }

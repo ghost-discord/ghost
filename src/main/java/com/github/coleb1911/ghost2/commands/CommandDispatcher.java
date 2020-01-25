@@ -1,13 +1,13 @@
 package com.github.coleb1911.ghost2.commands;
 
 import com.github.coleb1911.ghost2.Ghost2Application;
-import com.github.coleb1911.ghost2.References;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.CommandType;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.commands.modules.operator.ModuleClaimOperator;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
+import com.github.coleb1911.ghost2.database.repos.ApplicationMetaRepository;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.util.Permission;
@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 public final class CommandDispatcher {
     private final ExecutorService executor;
     private final GuildMetaRepository guildRepo;
+    private final ApplicationMetaRepository amRepo;
     private final CommandRegistry registry;
 
     /**
@@ -36,8 +37,9 @@ public final class CommandDispatcher {
      */
     @Autowired
     @ReflectiveAccess
-    public CommandDispatcher(GuildMetaRepository guildRepo, CommandRegistry registry) {
+    public CommandDispatcher(GuildMetaRepository guildRepo, ApplicationMetaRepository amRepo, CommandRegistry registry) {
         this.guildRepo = guildRepo;
+        this.amRepo = amRepo;
         this.registry = registry;
 
         // Initialize command registry and thread pool
@@ -118,7 +120,7 @@ public final class CommandDispatcher {
         // An exception is made for ModuleClaimOperator
         if (!(module instanceof ModuleClaimOperator) &&
                 (module.getInfo().getType() == CommandType.OPERATOR) &&
-                (ctx.getInvoker().getId().asLong() != References.getConfig().operatorId())) {
+                (ctx.getInvoker().getId().asLong() != amRepo.getOperatorId())) {
 
             ctx.replyBlocking(Module.REPLY_INSUFFICIENT_PERMISSIONS_USER);
             return false;
