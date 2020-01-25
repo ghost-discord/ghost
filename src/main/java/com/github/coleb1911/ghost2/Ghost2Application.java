@@ -3,6 +3,7 @@ package com.github.coleb1911.ghost2;
 import com.github.coleb1911.ghost2.commands.CommandDispatcher;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
+import com.github.coleb1911.ghost2.database.repos.ApplicationMetaRepository;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import com.github.coleb1911.ghost2.music.MusicServiceManager;
 import discord4j.core.DiscordClient;
@@ -44,7 +45,7 @@ import java.util.function.Predicate;
 @SpringBootApplication
 @EnableJpaRepositories("com.github.coleb1911.ghost2.database.repos")
 public class Ghost2Application implements ApplicationRunner {
-    private static final String MESSAGE_SET_OPERATOR = "No operator has been set for this bot instance. Use the \'claimoperator\' command to set one; until then, operator commands won't work.";
+    private static final String MESSAGE_SET_OPERATOR = "No operator has been set for this bot instance. Use the 'claimoperator' command to set one; until then, operator commands won't work.";
     private static final String ERROR_CONNECTION = "General connection error. Check your internet connection and try again.";
     private static final String ERROR_CONFIG = "ghost.properties is missing or does not contain a bot token, and no fallback environment variable could be read.\n" +
             "Read ghost2's README for info on how to set up the bot.";
@@ -52,15 +53,17 @@ public class Ghost2Application implements ApplicationRunner {
     private final ApplicationContext ctx;
     private final CommandDispatcher dispatcher;
     private final GuildMetaRepository guildRepo;
+    private final ApplicationMetaRepository amRepo;
     private DiscordClient client;
     private RandomAccessFile lockFile;
     private FileLock lock;
 
     @ReflectiveAccess
-    public Ghost2Application(ApplicationContext ctx, CommandDispatcher dispatcher, GuildMetaRepository guildRepo) {
+    public Ghost2Application(ApplicationContext ctx, CommandDispatcher dispatcher, GuildMetaRepository guildRepo, ApplicationMetaRepository amRepo) {
         this.ctx = ctx;
         this.dispatcher = dispatcher;
         this.guildRepo = guildRepo;
+        this.amRepo = amRepo;
     }
 
     public static void main(String[] args) {
@@ -114,10 +117,9 @@ public class Ghost2Application implements ApplicationRunner {
         this.registerListeners(client);
 
         // Get current bot operator, log notice if null
-        long operatorId = config.operatorId();
-        if (operatorId == -1) {
-            Logger.info(MESSAGE_SET_OPERATOR);
-        }
+        long operatorId = amRepo.getOperatorId();
+        if (operatorId == -1) Logger.info(MESSAGE_SET_OPERATOR);
+        else Logger.info("Current operator is " + operatorId);
 
         // Log in and block main thread until bot logs out
         client.login()
