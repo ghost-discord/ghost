@@ -2,14 +2,17 @@ open module ghost2.main {
     requires java.annotation;
     requires java.validation;
     requires java.persistence;
-    requires spring.web;
+    requires java.sql;
     requires spring.core;
+    requires spring.web;
+    requires spring.orm;
     requires spring.boot;
     requires spring.beans;
     requires spring.context;
     requires spring.data.jpa;
     requires spring.data.commons;
     requires spring.boot.autoconfigure;
+    requires com.zaxxer.hikari;
     requires org.apache.commons.lang3;
     requires org.apache.httpcomponents.httpclient;
     requires org.apache.httpcomponents.httpcore;

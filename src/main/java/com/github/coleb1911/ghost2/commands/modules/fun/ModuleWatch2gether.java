@@ -60,7 +60,7 @@ public final class ModuleWatch2gether extends Module {
         private String url = "";
 
         @JsonProperty("api_key")
-        private String apiKey = References.getConfig().w2g_api_key();
+        private String apiKey = References.getConfig().w2gApiKey();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
