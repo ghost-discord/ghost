@@ -1,24 +1,29 @@
 package com.github.coleb1911.ghost2.commands;
 
+import com.github.coleb1911.ghost2.commands.meta.EventHandler;
 import com.github.coleb1911.ghost2.commands.meta.InvalidModuleException;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import discord4j.core.DiscordClient;
+import discord4j.core.event.domain.Event;
 import org.pmw.tinylog.Logger;
 import org.reflections.Reflections;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,36 +39,35 @@ import java.util.stream.Collectors;
  */
 @Component
 @Configurable
-public final class CommandRegistry implements ApplicationListener<ContextRefreshedEvent> {
-    private static final String MODULE_PACKAGE = "com.github.coleb1911.ghost2.commands.modules";
+public final class CommandRegistry {
+    private static final String MODULE_PACKAGE = CommandRegistry.class.getPackageName();
 
-    private final List<Module> instances;
-    private final Set<Class> invalidModules;
-    private AutowireCapableBeanFactory factory;
+    private final List<Module> instances = new ArrayList<>();
+    private final Set<Class<?>> invalidModules = new LinkedHashSet<>();
+    private final AutowireCapableBeanFactory beanFactory;
 
+    @Autowired
     @ReflectiveAccess
-    public CommandRegistry() {
-        // Instantiate lists
-        instances = new ArrayList<>();
-        invalidModules = new LinkedHashSet<>();
+    public CommandRegistry(ApplicationContext context) {
+        this.beanFactory = context.getAutowireCapableBeanFactory();
 
-        // Find all Modules
         Reflections reflections = new Reflections(MODULE_PACKAGE);
         Set<Class<? extends Module>> moduleClasses = reflections.getSubTypesOf(Module.class);
-
-        // Construct an instance of each Module
         for (Class<? extends Module> moduleClass : moduleClasses) {
+            // Make sure module directly extends base class
+            if (!Module.class.equals(moduleClass.getSuperclass())) {
+                Logger.warn(moduleClass.getSimpleName() + " does not directly extend Module. It will be excluded from the command list.");
+                continue;
+            }
+
+            // Construct instance
             try {
-                instances.add(createInstance(moduleClass));
+                Module instance = createInstance(moduleClass);
+                instances.add(instance);
             } catch (InvalidModuleException e) {
                 Logger.error(e.getMessage());
                 invalidModules.add(moduleClass);
             }
-
-            // Warn if a Module class isn't final
-            // See https://github.com/cbryant02/ghost2/wiki/Writing-a-command-module#notes-and-best-practices
-            if (!Modifier.isFinal(moduleClass.getModifiers()))
-                Logger.warn("Module {} is not final. Add the final modifier and read the docs to understand why this is bad.", moduleClass.getSimpleName());
         }
     }
 
@@ -73,16 +77,17 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
      * @param name Command name
      * @return Command instance, or null if no command with that name exists
      */
-    Module getCommandInstance(String name) {
+    Optional<Module> getCommandInstance(@NonNull String name) {
         for (Module module : instances) {
             ModuleInfo info = module.getInfo();
             if (name.equals(info.getName()) || info.getAliases().contains(name)) {
                 instances.remove(module);
                 instances.add(createInstance(module.getClass()));
-                return module;
+                beanFactory.autowireBean(module);
+                return Optional.of(module);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -120,7 +125,7 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
      *
      * @return Invalid Module classes found on classpath
      */
-    Set<Class> getInvalidModules() {
+    Set<Class<?>> getInvalidModules() {
         return Set.copyOf(invalidModules);
     }
 
@@ -136,7 +141,6 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
         Module ret;
         try {
             ret = moduleClass.getDeclaredConstructor().newInstance();
-            if (factory != null) factory.autowireBean(ret);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
             throw new InvalidModuleException(moduleClass, InvalidModuleException.Reason.NOT_INSTANTIABLE);
         } catch (InvocationTargetException e) {
@@ -146,17 +150,31 @@ public final class CommandRegistry implements ApplicationListener<ContextRefresh
     }
 
     /**
-     * Listens for ApplicationContext refresh and gets a bean factory when it's available.<br>
-     * The bean factory is stored privately and used to autowire Module instances in {@link #createInstance}.
+     * Called when the Discord client is ready. Registers event listeners for all discovered modules.
      * <p>
-     * This method is for Spring only. Do not call it.
-     *
-     * @param event ContextRefreshedEvent
+     * This method is for Ghost2Application only. Do not call it.
      */
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        this.factory = event.getApplicationContext().getAutowireCapableBeanFactory();
-        for (Module module : instances)
-            factory.autowireBean(module);
+    public void registerEventListeners(DiscordClient client) {
+        for (Module instance : instances) {
+            // Read all the module's public methods
+            for (Method method : instance.getClass().getMethods()) {
+                // Get parameter type for this method
+                Optional<Class<? extends Event>> eventType = Optional.ofNullable(method.getAnnotation(EventHandler.class)).map(EventHandler::value);
+                if (eventType.isEmpty()) continue;
+
+                // Make sure module has been wired
+                beanFactory.autowireBean(instance);
+
+                // Register the listener
+                client.getEventDispatcher().on(eventType.get())
+                        .subscribe(cEvent -> {
+                            try {
+                                method.invoke(instance, cEvent);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                Logger.error(instance.getClass().getSimpleName() + " event handler errored on invocation: " + e.getCause().getMessage());
+                            }
+                        });
+            }
+        }
     }
 }

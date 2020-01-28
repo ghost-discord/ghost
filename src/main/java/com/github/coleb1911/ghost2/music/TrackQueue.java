@@ -8,21 +8,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public final class TrackQueue extends AudioEventAdapter {
     private static final int MAX_SIZE = 50;
 
     private final AudioPlayer player;
-    private final Deque<AudioTrack> queue;
+    private final List<AudioTrack> queue;
 
     TrackQueue(AudioPlayer player) {
         this.player = player;
-        this.queue = new ConcurrentLinkedDeque<>();
+        this.queue = Collections.synchronizedList(new LinkedList<>());
         player.addListener(this);
     }
 
@@ -31,7 +28,8 @@ public final class TrackQueue extends AudioEventAdapter {
             if (queue.size() < MAX_SIZE) {
                 if (player.startTrack(track, true)) {
                     return TrackAddResult.PLAYING;
-                } else if (queue.offerLast(track)) {
+                } else {
+                    queue.add(track);
                     return TrackAddResult.SQ_QUEUED;
                 }
             }
@@ -50,8 +48,8 @@ public final class TrackQueue extends AudioEventAdapter {
             if (tracks.size() > MAX_SIZE) return TrackAddResult.MQ_QUEUED_SOME;
 
             for (TrackAddResult s : stats) {
-                if (s.equals(TrackAddResult.FULL)) return TrackAddResult.MQ_QUEUED_SOME;
-                if (s.equals(TrackAddResult.FAILED)) return s;
+                if (TrackAddResult.FULL.equals(s)) return TrackAddResult.MQ_QUEUED_SOME;
+                if (TrackAddResult.FAILED.equals(s)) return s;
             }
             return TrackAddResult.MQ_QUEUED_ALL;
         }).onErrorResume(TrackAddResult::failedWithReason);
@@ -59,25 +57,18 @@ public final class TrackQueue extends AudioEventAdapter {
 
     Mono<Boolean> shuffle() {
         return Mono.fromCallable(() -> {
-            if (queue.isEmpty()) return false;
-
-            List<AudioTrack> tracks = new LinkedList<>(queue);
-            Collections.shuffle(tracks);
-            queue.clear();
-            return queue.addAll(tracks);
+            Collections.shuffle(queue);
+            return true;
         }).onErrorReturn(false);
     }
 
-    Mono<Boolean> remove(int index) {
-        return Mono.fromCallable(() -> {
-            Optional<AudioTrack> trackAtIndex = queue.stream().skip(index).findFirst();
-            if (trackAtIndex.isEmpty()) return false;
-            return queue.remove(trackAtIndex.get());
-        }).onErrorReturn(false);
+    Mono<AudioTrack> remove(int index) {
+        return Mono.just(queue.remove(index));
     }
 
     Mono<Boolean> next() {
-        return Mono.just(player.startTrack(queue.pollFirst(), false));
+        final AudioTrack track = queue.isEmpty() ? null : queue.remove(0);
+        return Mono.just(player.startTrack(track, false));
     }
 
     Flux<AudioTrack> getTracks() {

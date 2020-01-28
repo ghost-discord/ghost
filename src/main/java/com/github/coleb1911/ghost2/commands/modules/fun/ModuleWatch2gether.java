@@ -7,14 +7,10 @@ import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import com.github.coleb1911.ghost2.utility.RestUtils;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,7 +18,7 @@ import javax.validation.constraints.NotNull;
 
 public final class ModuleWatch2gether extends Module {
     private static final String W2G_URL = "https://www.watch2gether.com/rooms/create.json";
-    private static final RestTemplate restTemplate = createRestTemplate();
+    private static final RestTemplate restTemplate = RestUtils.defaultRestTemplate();
 
     @ReflectiveAccess
     public ModuleWatch2gether() {
@@ -33,13 +29,8 @@ public final class ModuleWatch2gether extends Module {
                 .withBotPermissions(PermissionSet.of(Permission.EMBED_LINKS)));
     }
 
-    private static RestTemplate createRestTemplate() {
-        HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build()).build();
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
-        return new RestTemplate(clientHttpRequestFactory);
-    }
-
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         try {
             final Watch2getherResponse room = restTemplate.postForObject(W2G_URL, new HttpEntity<>(new ModuleWatch2gether.Watch2getherRequest()), ModuleWatch2gether.Watch2getherResponse.class);

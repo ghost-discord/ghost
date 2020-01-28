@@ -4,8 +4,11 @@ import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
+import reactor.core.publisher.Flux;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,6 +23,7 @@ public final class ModulePurge extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         // Check for arguments
         if (ctx.getArgs().isEmpty()) {
@@ -37,11 +41,12 @@ public final class ModulePurge extends Module {
         }
 
         // Remove messages
-        ctx.getChannel().getMessagesBefore(ctx.getMessage().getId())
+        MessageChannel channel = ctx.getChannel();
+        Flux.just(ctx.getMessage().getId())
+                .flatMap(channel::getMessagesBefore)
                 .take(count)
-                .map(message -> message.delete().subscribe())
-                .retry(5L)
-                .blockLast();
+                .flatMap(Message::delete)
+                .subscribe();
         ctx.getMessage().delete().subscribe();
     }
 }

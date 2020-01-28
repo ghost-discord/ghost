@@ -5,15 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import com.github.coleb1911.ghost2.utility.RestUtils;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.jsoup.Jsoup;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -28,21 +25,16 @@ import java.util.List;
 /**
  * Module for searching wikipedia and displaying the most recent result
  */
+// https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=Nelson%20Mandela&utf8=&format=json
 @Service
 public final class ModuleWikipedia extends Module {
     private final URI baseURI;
     private final RestTemplate restTemplate;
 
     public ModuleWikipedia() {
-        this("https://en.wikipedia.org/", generateDefaultRestTemplate());
+        this("https://en.wikipedia.org/", RestUtils.defaultRestTemplate());
     }
 
-    // https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=Nelson%20Mandela&utf8=&format=json
-    private static RestTemplate generateDefaultRestTemplate() {
-        HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build()).build();
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
-        return new RestTemplate(clientHttpRequestFactory);
-    }
 
     public ModuleWikipedia(String baseUrl, RestTemplate restTemplate) {
         super(new ModuleInfo.Builder(ModuleWikipedia.class)
@@ -55,6 +47,7 @@ public final class ModuleWikipedia extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         String searchString = String.join(" ", ctx.getArgs());
         String urlSearchString = URLEncoder.encode(searchString, Charset.defaultCharset());

@@ -16,11 +16,12 @@ public final class ModuleKick extends Module {
     public ModuleKick() {
         super(new ModuleInfo.Builder(ModuleKick.class)
                 .withName("kick")
-                .withDescription("Kick a desired user")
+                .withDescription("Kick a user")
                 .withPermissions(PermissionSet.of(Permission.KICK_MEMBERS)));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         // Check for args
         if (ctx.getArgs().isEmpty()) {

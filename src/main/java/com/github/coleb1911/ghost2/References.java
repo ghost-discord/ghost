@@ -4,7 +4,6 @@ import com.github.coleb1911.ghost2.utility.PermanentReference;
 import discord4j.core.DiscordClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.pmw.tinylog.Logger;
 
 /**
  * A collection of globally accessible, commonly used, unchanging objects and constants.
@@ -12,7 +11,7 @@ import org.pmw.tinylog.Logger;
 public class References {
     public static final String VERSION_STRING = "1.0";
 
-    private static final PermanentReference<Ghost2Application> INSTANCE = new PermanentReference<>();
+    private static final PermanentReference<Ghost2Application> APP_INSTANCE = new PermanentReference<>();
     private static final PermanentReference<GhostConfig> CONFIG = new PermanentReference<>();
     private static final PermanentReference<DiscordClient> CLIENT = new PermanentReference<>();
     private static final PermanentReference<Long> START_TIME = new PermanentReference<>();
@@ -31,31 +30,20 @@ public class References {
 
     /**
      * Reloads the application config and all related values.<br>
-     * Note: The application will exit if a token change occurred. Don't change it at runtime.
+     * Note: Discord token changes only take effect on restart.
      */
     public static void reloadConfig() {
         final GhostConfig config = CONFIG.get();
-        final DiscordClient client = CLIENT.get();
-
         config.reload();
-        if (!config.token().equals(client.getConfig().getToken())) {
-            Logger.info("Token changed on config reload. Exiting.");
-            INSTANCE.get().exit(0);
-        }
     }
 
     // Getters
-    public static Ghost2Application getInstance() {
-        return INSTANCE.get();
+    public static Ghost2Application getApplicationInstance() {
+        return APP_INSTANCE.get();
     }
 
     public static DiscordClient getClient() {
         return CLIENT.get();
-    }
-
-    // Setters
-    static void setInstance(final Ghost2Application instance) {
-        INSTANCE.set(instance);
     }
 
     public static GhostConfig getConfig() {
@@ -65,6 +53,11 @@ public class References {
         }
 
         return CONFIG.get();
+    }
+
+    // Setters
+    static void setAppInstance(final Ghost2Application appInstance) {
+        APP_INSTANCE.set(appInstance);
     }
 
     static void setClient(final DiscordClient client) {

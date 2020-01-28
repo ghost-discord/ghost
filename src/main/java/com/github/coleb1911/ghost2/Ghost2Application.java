@@ -10,7 +10,6 @@ import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
-import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
@@ -88,7 +87,7 @@ public class Ghost2Application implements ApplicationRunner {
         }
 
         // Set instance
-        References.setInstance(this);
+        References.setAppInstance(this);
 
         // Fetch config
         GhostConfig config = References.getConfig();
@@ -140,6 +139,7 @@ public class Ghost2Application implements ApplicationRunner {
     public void exit(int status) {
         // Shut down MusicServiceManager
         MusicServiceManager.shutdown();
+        dispatcher.shutdown();
 
         // Log out bot
         client.logout().block();
@@ -230,26 +230,12 @@ public class Ghost2Application implements ApplicationRunner {
                 .filter(guildRepo::existsById)
                 .subscribe(guildRepo::deleteById);
 
-        // Autorole
-        client.getEventDispatcher().on(MemberJoinEvent.class)
-                .subscribe(e -> {
-                    GuildMeta meta = guildRepo.findById(e.getGuildId().asLong()).orElse(null);
-                    if (meta == null) {
-                        Logger.error("MemberJoinEvent guild {} doesn't exist in database");
-                        return;
-                    }
-
-                    if (meta.getAutoRoleEnabled() && !meta.getAutoRoleConfirmationEnabled()) {
-                        e.getMember().addRole(Snowflake.of(meta.getAutoRoleId()), "Autorole").subscribe();
-                        String guildName = Objects.requireNonNull(e.getGuild().block()).getName();
-                        String dm = "Welcome to " + guildName + "! You've been given your role automatically.";
-                        e.getMember().getPrivateChannel().subscribe(c -> c.createMessage(dm).subscribe());
-                    }
-                });
-
         // Send MessageCreateEvents to CommandDispatcher
         client.getEventDispatcher().on(MessageCreateEvent.class)
                 .filter(e -> e.getMember().isPresent() && !e.getMember().get().isBot())
                 .subscribe(dispatcher::onMessageEvent);
+
+        // Register module event listeners
+        dispatcher.getRegistry().registerEventListeners(client);
     }
 }

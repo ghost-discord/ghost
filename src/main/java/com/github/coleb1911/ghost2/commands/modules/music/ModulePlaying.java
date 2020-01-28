@@ -9,22 +9,24 @@ import com.github.coleb1911.ghost2.music.MusicUtils;
 
 import javax.validation.constraints.NotNull;
 
-public final class ModuleShuffle extends Module {
+public final class ModulePlaying extends Module {
     @ReflectiveAccess
-    public ModuleShuffle() {
-        super(new ModuleInfo.Builder(ModuleShuffle.class)
-                .withName("shuffle")
-                .withDescription("Shuffle the tracks in the queue")
-                .withAliases("queueshuffle", "qs"));
+    public ModulePlaying() {
+        super(new ModuleInfo.Builder(ModulePlaying.class)
+                .withName("playing")
+                .withDescription("Get the currently playing track")
+                .withAliases("nowplaying", "np"));
     }
 
     @Override
     @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         MusicUtils.fetchMusicService(ctx)
-                .flatMap(MusicService::shuffle)
-                .doOnNext(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
-                .doOnError(ignore -> ctx.getMessage().addReaction(REACT_WARNING).subscribe())
-                .subscribe();
+                .flatMap(MusicService::getCurrentTrack)
+                .subscribe(track -> ctx.replyBlocking("Currently playing **" +
+                        track.getInfo().title +
+                        "** by **" +
+                        track.getInfo().author +
+                        "**."));
     }
 }

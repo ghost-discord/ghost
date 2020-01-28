@@ -14,7 +14,20 @@ public interface GhostConfig extends Config, Accessible, Mutable, Reloadable {
     @Key("ghost.token")
     String token();
 
-    @Key("ghost.keys.w2g-api-key")
+    // Available only on request, no documentation
+    // https://community.watch2gether.com
+    @Key("ghost.keys.watch2gether")
     @DefaultValue("ujww234232ewegwgwef4d")
     String w2gApiKey();
+
+    // https://developers.google.com/youtube/v3
+    @Key("ghost.keys.youtube")
+    String youtubeApiKey();
+
+    // https://www.ibm.com/watson/services/language-translator/
+    @Key("ghost.keys.watson")
+    String watsonApiKey();
+
+    @Key("ghost.keys.watson-url")
+    String watsonApiUrl();
 }

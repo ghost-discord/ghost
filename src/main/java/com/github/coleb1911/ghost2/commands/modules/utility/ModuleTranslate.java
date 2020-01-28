@@ -56,9 +56,8 @@ public final class ModuleTranslate extends Module {
             "German: de\n" +
             "Russian: ru\n";
 
-    //These Strings have to be initialized in the `invoke` method in order to read system properties.
-    private static final String API_URL = References.getConfig().getProperty("ibmwatsontranslator.url");
-    private static final String API_KEY = References.getConfig().getProperty("ibmwatsontranslator.key");
+    private static final String API_URL = References.getConfig().watsonApiUrl();
+    private static final String API_KEY = References.getConfig().watsonApiKey();
 
     @ReflectiveAccess
     public ModuleTranslate() {
@@ -68,6 +67,7 @@ public final class ModuleTranslate extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         if (StringUtils.isBlank(API_URL) || StringUtils.isBlank(API_KEY)) {
             ctx.replyBlocking(REPLY_UNCONFIGURED);

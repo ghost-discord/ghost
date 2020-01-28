@@ -3,6 +3,7 @@ package com.github.coleb1911.ghost2.commands.modules.moderation;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
 import reactor.core.publisher.Mono;
@@ -10,14 +11,16 @@ import reactor.core.publisher.Mono;
 import javax.validation.constraints.NotNull;
 
 public final class ModuleBan extends Module {
+    @ReflectiveAccess
     public ModuleBan() {
         super(new ModuleInfo.Builder(ModuleBan.class)
                 .withName("ban")
-                .withDescription("Ban a desired user.")
+                .withDescription("Ban a user")
                 .withBotPermissions(PermissionSet.of(Permission.BAN_MEMBERS)));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         if(ctx.getArgs().isEmpty()) {
             ctx.replyBlocking("Please specify a user.");

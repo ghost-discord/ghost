@@ -11,38 +11,44 @@ import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Contains relevant information for when a command is invoked.
  */
 public class CommandContext {
-    private final Guild guild;
-    private final MessageChannel channel;
-    private final Member invoker;
-    private final Member self;
-    private final Message message;
-    private final List<String> args;
-    private final String trigger;
-    private final DiscordClient client;
-    private final List<User> userMentions;
-    private final List<Role> roleMentions;
+    private final DiscordClient client;     // Client that received the message event (i.e. us)
+    private final Message message;          // Message that triggered the command
+    private final Guild guild;              // Guild the message was sent in
+    private final MessageChannel channel;   // Channel the message was sent in
+    private final Member invoker;           // User that invoked the command (as a member of the guild)
+    private final Member self;              // The bot user (as a member of the guild)
+    private final List<String> args;        // Arguments passed to the command (split according to whitespace)
+    private final List<User> userMentions;  // Users mentioned in the message
+    private final List<Role> roleMentions;  // Roles mentioned in the message
 
     public CommandContext(MessageCreateEvent event) {
-        this.guild = Objects.requireNonNull(event.getGuild().block());
-        this.channel = event.getMessage().getChannel().block();
-        this.invoker = event.getMember().orElse(null);
-        this.self = Objects.requireNonNull(event.getClient().getSelf().block()).asMember(guild.getId()).block();
-        this.message = event.getMessage();
-        this.args = extractArgs(message);
-        this.trigger = args.remove(0);
-        this.client = event.getClient();
-        this.userMentions = event.getMessage().getUserMentions().collectList().block();
-        this.roleMentions = event.getMessage().getRoleMentions().collectList().block();
+        client = event.getClient();
+        message = event.getMessage();
+        guild = event.getGuild().blockOptional().orElseThrow();
+        channel = message.getChannel().blockOptional().orElseThrow();
+        invoker = event.getMember().orElseThrow();
+        self = event.getClient().getSelfId().map(guild::getMemberById).map(Mono::block).orElseThrow();
+        args = extractArgs(message);
+        userMentions = message.getUserMentions().collectList().blockOptional().orElseThrow();
+        roleMentions = message.getRoleMentions().collectList().blockOptional().orElseThrow();
+    }
+
+    public DiscordClient getClient() {
+        return client;
+    }
+
+    public Message getMessage() {
+        return message;
     }
 
     public Guild getGuild() {
@@ -61,28 +67,16 @@ public class CommandContext {
         return self;
     }
 
-    public Message getMessage() {
-        return message;
-    }
-
     public List<String> getArgs() {
-        return args;
-    }
-
-    public String getTrigger() {
-        return trigger;
-    }
-
-    public DiscordClient getClient() {
-        return client;
+        return Collections.unmodifiableList(args);
     }
 
     public List<User> getUserMentions() {
-        return userMentions;
+        return Collections.unmodifiableList(userMentions);
     }
 
     public List<Role> getRoleMentions() {
-        return roleMentions;
+        return Collections.unmodifiableList(roleMentions);
     }
 
     /**
@@ -148,9 +142,12 @@ public class CommandContext {
         return replyEmbed(consumer).block();
     }
 
-    private List<String> extractArgs(Message message) {
-        String content = message.getContent().orElse("");
-        // Arrays.asList returns an immutable list implementation, so we need to wrap it in an actual ArrayList
-        return new ArrayList<>(Arrays.asList(content.split("\\p{javaSpaceChar}")));
+    private static List<String> extractArgs(Message message) {
+        String[] components = message.getContent()
+                .map(msg -> msg.split("\\p{javaSpaceChar}"))
+                .orElse(new String[0]);
+        return Arrays.stream(components)
+                .skip(1)
+                .collect(Collectors.toList());
     }
 }

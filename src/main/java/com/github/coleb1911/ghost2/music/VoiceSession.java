@@ -11,8 +11,8 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class VoiceSession {
-    private AtomicReference<VoiceConnection> connection = new AtomicReference<>();
-    private AtomicReference<VoiceSession.State> state = new AtomicReference<>();
+    private final AtomicReference<VoiceConnection> connection = new AtomicReference<>();
+    private final AtomicReference<VoiceSession.State> state = new AtomicReference<>();
 
     Mono<Void> join(final Snowflake channelId, final AudioProvider provider) {
         return References.getClient().getChannelById(channelId)

@@ -2,8 +2,7 @@ plugins {
     id 'java'
     id 'java-library'
     id 'jacoco'
-    id 'com.gradle.build-scan' version '2.3'
-    id 'org.springframework.boot' version '2.1.6.RELEASE'
+    id 'org.springframework.boot' version '2.2.4.RELEASE'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -22,44 +21,45 @@ repositories {
 dependencies {
     // Spring and Hibernate
     // Logback is excluded in order to avoid conflict with TinyLog
-    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.1.6.RELEASE') {
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.2.4.RELEASE') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
+
     // Included to deserialize timestamps from JSON
-    implementation group: 'com.fasterxml.jackson.datatype', name:'jackson-datatype-jsr310'
-    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.3.Final'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.10.2'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.2'
 
     // Spring Web for consuming REST APIs
     // Logging framework is, again, excluded to avoid conflict
-    implementation (group: 'org.springframework.data', name: 'spring-data-rest-webmvc', version: '2.1.6.RELEASE') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
+    implementation group: 'org.springframework.data', name: 'spring-data-rest-webmvc', version: '3.2.4.RELEASE'
 
     // Other libraries & APIs
-    implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.0.10'
-    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.22'
+    implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.0.12'
+    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.33'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.10'
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
     implementation group: 'org.tinylog', name: 'tinylog', version: '1.3.6'
     implementation group: 'org.tinylog', name: 'slf4j-binding', version: '1.3.6'
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.3.1'
-    implementation group: 'com.h2database', name: 'h2', version: '1.4.199'
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.1'
+    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.9'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-    implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
-    implementation group: 'org.jsoup', name:'jsoup', version:'1.12.1'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.12.1'
 
     // JUnit
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.5.0'
-    testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1'
-    testImplementation group:'org.mockito', name: 'junit-jupiter', version: '2.20.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.0'
+    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.2.4'
 
-    // Apache utilities for build tools
-    // Excluded in final build
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9'
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.18'
+    // Apache utilities
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.19'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    // Explicitly declare Netty 0.8.14 for Discord4J
+    // Using 0.9.x causes a NoClassDefFoundError for reactor.netty.NettyPipeline$SendOptions
+    implementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.14.RELEASE'
 }
 
 test {
@@ -94,12 +94,7 @@ javadoc {
     }
 }
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
-
-task ghostPackage(type:JavaExec) {
+task ghostPackage(type: JavaExec) {
     dependsOn bootJar
     main = 'com.github.coleb1911.ghost2.buildtools.RuntimeBuilder'
     classpath = sourceSets.main.runtimeClasspath

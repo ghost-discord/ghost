@@ -19,6 +19,7 @@ public final class ModuleIsUp extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         if (ctx.getArgs().isEmpty()) {
             ctx.replyBlocking("Please specify a host or IP.");

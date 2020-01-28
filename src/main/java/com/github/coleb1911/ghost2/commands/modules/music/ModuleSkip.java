@@ -14,13 +14,16 @@ public final class ModuleSkip extends Module {
     public ModuleSkip() {
         super(new ModuleInfo.Builder(ModuleSkip.class)
                 .withName("skip")
-                .withDescription("Skip the current track."));
+                .withDescription("Skip the current track"));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         MusicUtils.fetchMusicService(ctx)
                 .flatMap(MusicService::next)
+                .doOnSuccess(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
+                .doOnError(ignore -> ctx.getMessage().addReaction(REACT_WARNING).subscribe())
                 .subscribe();
     }
 }

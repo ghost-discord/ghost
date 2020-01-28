@@ -13,11 +13,12 @@ public final class ModuleRemove extends Module {
     public ModuleRemove() {
         super(new ModuleInfo.Builder(ModuleRemove.class)
                 .withName("remove")
-                .withDescription("Remove the track at the given index.")
+                .withDescription("Remove a track from the queue")
                 .showTypingIndicator());
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         if (ctx.getArgs().size() < 1) {
             ctx.reply("Please provide a track number.");
@@ -33,10 +34,10 @@ public final class ModuleRemove extends Module {
         }
 
         MusicUtils.fetchMusicService(ctx)
-                .flatMap(svc -> svc.remove(index-1))
-                .subscribe(success -> {
-                    if (success) {
-                        ctx.replyBlocking("Removed track " + index + ".");
+                .flatMap(svc -> svc.remove(index - 1))
+                .subscribe(track -> {
+                    if (track != null) {
+                        ctx.replyBlocking("Removed **" + track.getInfo().title + "**.");
                         return;
                     }
                     ctx.replyBlocking("Invalid track number.");

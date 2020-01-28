@@ -9,8 +9,8 @@ import javax.persistence.Table;
 @Table(name = "APPLICATION_META")
 public class ApplicationMeta {
     @Id
-    @Column(name = "KEY", unique = true, nullable = false)
-    private String key = "ghost2";
+    @Column(name = "ID", unique = true, nullable = false)
+    private String id = "ghost2";
 
     @Column(name = "OPERATOR_ID", unique = true)
     private Long operatorId = -1L;
@@ -19,7 +19,6 @@ public class ApplicationMeta {
     }
 
     public ApplicationMeta(long operatorId) {
-        this.key = "ghost2";
         this.operatorId = operatorId;
     }
 

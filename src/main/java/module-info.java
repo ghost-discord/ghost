@@ -1,3 +1,4 @@
+@SuppressWarnings("JavaModuleNaming")
 open module ghost2.main {
     requires java.annotation;
     requires java.validation;
@@ -24,7 +25,9 @@ open module ghost2.main {
     requires lavaplayer;
     requires reactor.core;
     requires org.reactivestreams;
-    requires jackson.annotations;
+    requires io.netty.handler;
+    requires io.netty.codec.http;
+    requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
     requires reflections;

@@ -11,9 +11,11 @@ import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
 import discord4j.core.object.util.Snowflake;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.validation.constraints.NotNull;
 
+@Configurable
 public final class ModuleConfirm extends Module {
     @Autowired GuildMetaRepository guildRepo;
 
@@ -26,6 +28,7 @@ public final class ModuleConfirm extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         ctx.getSelf().getBasePermissions().subscribe(permissions -> {
             if (permissions.contains(Permission.MANAGE_MESSAGES))
@@ -45,7 +48,7 @@ public final class ModuleConfirm extends Module {
                 ctx.getInvoker().addRole(role.getId(), "Autorole").subscribe();
                 ctx.replyDirectBlocking("You have received your role.");
             } else {
-                ctx.replyDirectBlocking("You already have " + ctx.getGuild().getName() + "'s base role.");
+                ctx.replyDirectBlocking("You already have the " + role.getName() + " role.");
             }
         } else {
             ctx.replyDirectBlocking("Autorole confirmation is disabled. Your roles have not changed.");

@@ -1,6 +1,9 @@
 package com.github.coleb1911.ghost2.commands.meta;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -10,5 +13,7 @@ import java.lang.annotation.Target;
  * injected field or a method that's only used reflectively.
  */
 @Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.SOURCE)
+@Inherited
 public @interface ReflectiveAccess {
 }

@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * @author mpardoen
+ */
 public final class ModuleRandomUser extends Module {
     private static final Random RNG = new Random();
 
@@ -32,6 +35,7 @@ public final class ModuleRandomUser extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         VoiceState callerState = ctx.getInvoker().getVoiceState().block();
         List<User> users = new ArrayList<>();
@@ -65,7 +69,7 @@ public final class ModuleRandomUser extends Module {
 
         if (users != null && !users.isEmpty()) {
             User randomPick = users.get(RNG.nextInt(users.size()));
-            ctx.replyBlocking("The random user is " + randomPick.getUsername());
-        } else ctx.replyBlocking("There are no users to pick from");
+            ctx.replyBlocking(randomPick.getMention());
+        } else ctx.replyBlocking("There are no users to pick from.");
     }
 }

@@ -14,11 +14,12 @@ public final class ModuleLeave extends Module {
     public ModuleLeave() {
         super(new ModuleInfo.Builder(ModuleLeave.class)
                 .withName("leave")
-                .withDescription("Make ghost2 stop music playback and leave.")
+                .withDescription("Make ghost2 stop music playback and leave")
                 .withAliases("stop", "stopmusic"));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         if (!MusicServiceManager.serviceExists(ctx.getGuild().getId())) {
             ctx.replyBlocking("I'm not playing music right now.");
@@ -27,6 +28,8 @@ public final class ModuleLeave extends Module {
 
         Mono.just(ctx.getGuild().getId())
                 .flatMap(MusicServiceManager::forceCleanup)
+                .doOnSuccess(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
+                .doOnError(ignore -> ctx.getMessage().addReaction(REACT_WARNING).subscribe())
                 .subscribe();
     }
 }

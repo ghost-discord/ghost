@@ -17,6 +17,7 @@ public final class ModuleUptime extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         ctx.replyBlocking(References.uptime());
     }

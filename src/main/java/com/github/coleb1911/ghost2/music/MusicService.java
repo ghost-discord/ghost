@@ -36,18 +36,36 @@ public final class MusicService {
                 });
     }
 
+    public Snowflake getGuildId() {
+        return guildId;
+    }
+
     public Mono<Boolean> next() {
         return queue.next();
     }
 
-    public Mono<Boolean> remove(int index) {
+    public Mono<AudioTrack> getCurrentTrack() {
+        return Mono.just(player.getPlayingTrack());
+    }
+
+    public Mono<AudioTrack> remove(int index) {
         return queue.remove(index);
     }
 
+    /**
+     * Stream the tracks currently in the queue.
+     *
+     * @return A {@link Flux<AudioTrack>}
+     */
     public Flux<AudioTrack> streamTracks() {
         return queue.getTracks();
     }
 
+    /**
+     * Shuffle the items currently in the queue.
+     *
+     * @return Mono.just(true) if successful
+     */
     public Mono<Boolean> shuffle() {
         return queue.shuffle();
     }
@@ -59,15 +77,15 @@ public final class MusicService {
         cleanupScheduler.shutdown();
     }
 
-    void attemptCleanup() {
+    private void attemptCleanup() {
         Mono.just(this)
                 .filter(MusicService::shouldCleanup)
-                .thenReturn(guildId)
+                .map(svc -> svc.guildId)
                 .flatMap(MusicServiceManager::forceCleanup)
                 .subscribe();
     }
 
-    boolean shouldCleanup() {
+    private boolean shouldCleanup() {
         return ((player.getPlayingTrack() == null && queue.isEmpty()) || player.isPaused());
     }
 }

@@ -1,6 +1,7 @@
 package com.github.coleb1911.ghost2.commands.modules.fun;
 
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
+import com.github.coleb1911.ghost2.utility.RestUtils;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
@@ -13,15 +14,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ModuleWikipediaTest {
     WireMockServer wireMockServer;
@@ -56,8 +52,8 @@ public class ModuleWikipediaTest {
 
     @Test
     public void testWikiNeslonMandela() {
-        final RestTemplate restTemplate = new RestTemplate();
-        ModuleWikipedia wikiModule = new ModuleWikipedia(wireMockServer.baseUrl(), restTemplate );
+        final RestTemplate restTemplate = RestUtils.defaultRestTemplate();
+        ModuleWikipedia wikiModule = new ModuleWikipedia(wireMockServer.baseUrl(), restTemplate);
         CommandContext mockContext = mock(CommandContext.class, RETURNS_DEEP_STUBS);
         when(mockContext.getArgs()).thenReturn(List.of("Nelson Mandela"));
         ArgumentCaptor<Consumer<? super MessageCreateSpec>> messageCreatorCaptor = ArgumentCaptor.forClass(Consumer.class);
@@ -72,7 +68,7 @@ public class ModuleWikipediaTest {
 
     @Test
     public void testSuggestion() {
-        final RestTemplate template = new RestTemplate();
+        final RestTemplate template = RestUtils.defaultRestTemplate();
         ModuleWikipedia wikiModule = new ModuleWikipedia(wireMockServer.baseUrl(), template);
         CommandContext mockContext = mock(CommandContext.class, RETURNS_DEEP_STUBS);
         when(mockContext.getArgs()).thenReturn(List.of("Azmec"));

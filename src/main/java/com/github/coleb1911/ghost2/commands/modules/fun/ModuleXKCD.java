@@ -6,9 +6,7 @@ import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import com.github.coleb1911.ghost2.utility.RestUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,24 +17,18 @@ public final class ModuleXKCD extends Module {
     private static final String BASE_URL = "https://xkcd.com/";
     private static final String REPLY_FETCH_ERROR = "Error trying to retrieve xkcd.";
 
-    private static final RestTemplate TEMPLATE = createRestTemplate();
+    private static final RestTemplate TEMPLATE = RestUtils.defaultRestTemplate();
     private static final Random random = new Random();
-
-    private static RestTemplate createRestTemplate() {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-        clientHttpRequestFactory.setHttpClient(client);
-        return new RestTemplate(clientHttpRequestFactory);
-    }
 
     @ReflectiveAccess
     public ModuleXKCD() {
         super(new ModuleInfo.Builder(ModuleXKCD.class)
                 .withName("xkcd")
-                .withDescription("Fetch an XKCD comic."));
+                .withDescription("Fetch an XKCD comic"));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         final String url;
         if (ctx.getArgs().isEmpty()) {

@@ -34,6 +34,7 @@ public abstract class Module {
      *
      * @param info ModuleInfo.Builder with the subclass' metadata
      */
+    @ReflectiveAccess
     protected Module(ModuleInfo.Builder info) {
         this.info = info.build();
     }
@@ -51,6 +52,7 @@ public abstract class Module {
      *
      * @param ctx Command context. <b>Cannot be null.</b>
      */
+    @ReflectiveAccess
     public abstract void invoke(@NotNull final CommandContext ctx);
 
     @Override

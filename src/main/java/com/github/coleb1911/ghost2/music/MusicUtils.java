@@ -5,6 +5,7 @@ import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.VoiceChannel;
 import discord4j.core.object.util.Permission;
+import org.springframework.lang.NonNull;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -20,19 +21,22 @@ public final class MusicUtils {
 
     /**
      * Gets a {@linkplain MusicService} by a user's demand. Performs preliminary
-     * permission checks, replies dynamically, and gives reaction-based feedback.
+     * permission checks, and responds dynamically according to status.
      * <br/>
-     * Will not create a new MusicService if one is already active for the guild.
+     * Side-effects: this method will create a music service if one does not already exist
+     * for the given guild.
      *
-     * @return A {@linkplain Mono} that will emit the resultant MusicService. Nullable.
+     * @return A {@linkplain Mono} that will emit the resultant MusicService. May be empty.
      */
     public static Mono<MusicService> fetchMusicService(CommandContext ctx) {
         return MusicUtils.getVoiceChannel(ctx.getInvoker())
                 // Reply and complete if no channel found
                 .switchIfEmpty(Mono.fromRunnable(() -> ctx.replyBlocking(REPLY_NO_CHANNEL)))
                 // Reply and complete if permissions are insufficient
-                .filterWhen(channel -> MusicUtils.checkVoicePermissions(ctx.getInvoker(), channel))
-                .switchIfEmpty(Mono.fromRunnable(() -> ctx.replyBlocking(REPLY_NO_PERMISSIONS)))
+                .filterWhen(channel -> MusicUtils.checkVoicePermissions(ctx.getSelf(), channel)
+                        .doOnNext(canJoin -> {
+                            if (!canJoin) ctx.replyBlocking(REPLY_NO_PERMISSIONS);
+                        }))
                 // Return music service
                 .flatMap(channel -> MusicServiceManager.fetch(ctx.getGuild().getId(), channel.getId()));
     }
@@ -43,7 +47,8 @@ public final class MusicUtils {
      * @param member The Member
      * @return The VoiceChannel, or {@link Mono#empty()} if null
      */
-    private static Mono<VoiceChannel> getVoiceChannel(Member member) {
+    @NonNull
+    private static Mono<VoiceChannel> getVoiceChannel(@NonNull Member member) {
         return member.getVoiceState()
                 .flatMap(VoiceState::getChannel)
                 .filter(Objects::nonNull);
@@ -53,11 +58,11 @@ public final class MusicUtils {
      * Checks if the given {@linkplain Member} has both {@link Permission#CONNECT}
      * and {@link Permission#SPEAK} in the given {@linkplain VoiceChannel}.
      */
-    private static Mono<Boolean> checkVoicePermissions(Member member, VoiceChannel channel) {
-        return channel.getEffectivePermissions(member.getId())
-                .map(permissions -> permissions.contains(Permission.SPEAK) &&
-                        permissions.contains(Permission.CONNECT))
-                .filter(Objects::nonNull)
+    @NonNull
+    private static Mono<Boolean> checkVoicePermissions(@NonNull Member member, @NonNull VoiceChannel channel) {
+        return Mono.just(channel)
+                .flatMap(c -> c.getEffectivePermissions(member.getId()))
+                .map(ps -> ps.contains(Permission.SPEAK) && ps.contains(Permission.CONNECT))
                 .defaultIfEmpty(false);
     }
 }

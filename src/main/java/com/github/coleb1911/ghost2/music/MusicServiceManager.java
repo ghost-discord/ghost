@@ -1,5 +1,6 @@
 package com.github.coleb1911.ghost2.music;
 
+import com.github.coleb1911.ghost2.References;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -9,6 +10,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
+import discord4j.core.DiscordClient;
+import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.object.util.Snowflake;
 import org.pmw.tinylog.Logger;
 import reactor.core.publisher.Flux;
@@ -17,9 +20,8 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class MusicServiceManager {
     private static final AudioPlayerManager PLAYER_MANAGER;
@@ -41,8 +43,7 @@ public final class MusicServiceManager {
     public static Mono<MusicService> fetch(final Snowflake guildId, final Snowflake channelId) {
         return Mono.fromCallable(() -> {
             // Return active service if it already exists
-            MusicService service;
-            if ((service = SERVICES.get(guildId)) != null) return service;
+            if (SERVICES.get(guildId) != null) return SERVICES.get(guildId);
 
             // Create player, voice session, and audio provider
             AudioPlayer player = PLAYER_MANAGER.createPlayer();
@@ -50,9 +51,18 @@ public final class MusicServiceManager {
             session.join(channelId, new SimpleAudioProvider(player)).subscribe();
 
             // Create and return service
-            service = new MusicService(guildId, player, session);
+            final MusicService service = new MusicService(guildId, player, session);
             SERVICES.put(guildId, service);
             Logger.info("Created new MusicService for guild " + guildId.asString());
+
+            // Destroy service on disconnect
+            final DiscordClient self = References.getClient();
+            self.getEventDispatcher().on(VoiceStateUpdateEvent.class)
+                    .filter(ev -> ev.getClient().equals(self))
+                    .filterWhen(ev -> ev.getCurrent().getChannel().map(Objects::isNull).defaultIfEmpty(true))
+                    .map(ignore -> service.getGuildId())
+                    .subscribe(MusicServiceManager::forceCleanup);
+
             return service;
         });
     }
@@ -99,40 +109,27 @@ public final class MusicServiceManager {
      * @see <a href="https://github.com/sedmelluq/lavaplayer#supported-formats">LavaPlayer formats</a>
      */
     static Mono<List<AudioTrack>> loadFrom(final String source) {
-        return Mono.fromCallable(() -> {
-            final AtomicReference<List<AudioTrack>> loadResult = new AtomicReference<>();
-            final CountDownLatch latch = new CountDownLatch(1);
+        return Mono.create(sink -> PLAYER_MANAGER.loadItem(source, new AudioLoadResultHandler() {
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                sink.success(List.of(track));
+            }
 
-            PLAYER_MANAGER.loadItem(source, new AudioLoadResultHandler() {
-                @Override
-                public void trackLoaded(AudioTrack track) {
-                    loadResult.set(List.of(track));
-                    latch.countDown();
-                }
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                sink.success(List.copyOf(playlist.getTracks()));
+            }
 
-                @Override
-                public void playlistLoaded(AudioPlaylist playlist) {
-                    loadResult.set(List.copyOf(playlist.getTracks()));
-                    latch.countDown();
-                }
+            @Override
+            public void noMatches() {
+                sink.success();
+            }
 
-                @Override
-                public void noMatches() {
-                    Logger.warn("Failed to find valid audio track for source " + source);
-                    loadResult.set(List.of());
-                    latch.countDown();
-                }
-
-                @Override
-                public void loadFailed(FriendlyException e) {
-                    Logger.error(e, "Encountered an exception when loading track from source " + source);
-                    loadResult.set(List.of());
-                    latch.countDown();
-                }
-            });
-
-            latch.await();
-            return loadResult.get();
-        }).onErrorReturn(List.of());
+            @Override
+            public void loadFailed(FriendlyException e) {
+                Logger.error(e, "Encountered an exception when loading track from source " + source);
+                sink.error(e);
+            }
+        }));
     }
 }

@@ -1,11 +1,15 @@
 package com.github.coleb1911.ghost2.database.repos;
 
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.ApplicationMeta;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
+@ReflectiveAccess
 public interface ApplicationMetaRepository extends CrudRepository<ApplicationMeta, String> {
     @Override
     @NonNull

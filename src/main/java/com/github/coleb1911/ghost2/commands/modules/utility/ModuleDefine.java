@@ -5,6 +5,7 @@ import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import com.github.coleb1911.ghost2.utility.RestUtils;
 import discord4j.core.spec.EmbedCreateSpec;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -33,7 +34,7 @@ public final class ModuleDefine extends Module {
     private static final String REPLY_SERVER_ERROR = "The dictionary API is currently unavailable. Please try again later.";
     private static final String REQUEST_TEMPLATE = "https://api.datamuse.com/words?sp=%s&max=1&md=d";
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = RestUtils.defaultRestTemplate();
 
     @ReflectiveAccess
     public ModuleDefine() {
@@ -44,6 +45,7 @@ public final class ModuleDefine extends Module {
 
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         if (ctx.getArgs().size() < 1) {
             ctx.getChannel().createMessage(REPLY_MISSING_WORD).block();

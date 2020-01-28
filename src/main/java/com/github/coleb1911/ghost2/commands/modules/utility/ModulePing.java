@@ -16,6 +16,7 @@ public final class ModulePing extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         ctx.replyBlocking("Pong!");
     }

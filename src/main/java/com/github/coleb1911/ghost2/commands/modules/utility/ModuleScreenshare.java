@@ -16,10 +16,11 @@ public final class ModuleScreenshare extends Module {
     public ModuleScreenshare() {
         super(new ModuleInfo.Builder(ModuleScreenshare.class)
                 .withName("screenshare")
-                .withDescription("Generates a screenshare link."));
+                .withDescription("Generates a screenshare link"));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         // Check if user is connected to a voice channel
         ctx.getInvoker().getVoiceState()

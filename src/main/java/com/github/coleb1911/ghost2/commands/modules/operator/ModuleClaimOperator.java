@@ -11,6 +11,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.util.Snowflake;
 import org.pmw.tinylog.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
@@ -19,6 +20,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
+@Configurable
 public final class ModuleClaimOperator extends Module {
     private static final String REPLY_PROMPT = "A key has been generated and logged to the console. Paste it in chat to claim operator. (30s timeout)";
     private static final String REPLY_VALID = "Key valid. Hello, guardian.";
@@ -44,6 +46,7 @@ public final class ModuleClaimOperator extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         // Generate key & fetch app instance
         String key = generateRandomString();
@@ -68,10 +71,8 @@ public final class ModuleClaimOperator extends Module {
                     }
                 })
                 .timeout(Duration.of(30L, ChronoUnit.SECONDS), s -> ctx.replyBlocking(REPLY_TIMEOUT))
-                .blockFirst();
-
-        // Reload configuration
-        References.reloadConfig();
+                .doOnComplete(References::reloadConfig)
+                .subscribe();
     }
 
     private String generateRandomString() {

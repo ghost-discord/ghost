@@ -12,13 +12,15 @@ import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
+import discord4j.core.object.util.Snowflake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Optional;
 
 /**
  * Processes {@link MessageCreateEvent}s from the main application class, and calls {@link Module#invoke invoke}
@@ -27,7 +29,11 @@ import java.util.concurrent.Executors;
 @Component
 @Configurable
 public final class CommandDispatcher {
-    private final ExecutorService executor;
+    private final Scheduler commandScheduler = Schedulers.newBoundedElastic(
+            Schedulers.DEFAULT_BOUNDED_ELASTIC_SIZE,
+            Schedulers.DEFAULT_BOUNDED_ELASTIC_QUEUESIZE,
+            "CommandDispatcher"
+    );
     private final GuildMetaRepository guildRepo;
     private final ApplicationMetaRepository amRepo;
     private final CommandRegistry registry;
@@ -41,9 +47,6 @@ public final class CommandDispatcher {
         this.guildRepo = guildRepo;
         this.amRepo = amRepo;
         this.registry = registry;
-
-        // Initialize command registry and thread pool
-        executor = Executors.newCachedThreadPool();
     }
 
     /**
@@ -51,53 +54,58 @@ public final class CommandDispatcher {
      * <p>
      * Should <b>NOT</b> be called by anything other than {@link Ghost2Application}.
      *
-     * @param ev Event to process
+     * @param event Event to process
      */
-    public void onMessageEvent(MessageCreateEvent ev) {
+    public void onMessageEvent(MessageCreateEvent event) {
         // Build command context
-        final CommandContext ctx = new CommandContext(ev);
+        final CommandContext context = new CommandContext(event);
 
-        // Fetch prefix from database
-        // GuildMeta shouldn't be null, otherwise we wouldn't have received the event.
-        // We still null-check to be safe and get rid of the warning.
-        final GuildMeta meta = guildRepo.findById(ctx.getGuild().getId().asLong()).orElse(null);
-        if (null == meta) {
-            return;
-        }
-        String prefix = meta.getPrefix();
+        // Isolate command name
+        Optional<String> commandNameOpt = isolateCommand(context, event);
+        if (commandNameOpt.isEmpty()) return;
 
-        // Check for prefix & isolate the command name if present
-        String trigger = ctx.getTrigger();
-        String commandName;
-        if (trigger.indexOf(prefix) == 0) {
-            commandName = trigger.replace(prefix, "");
-            // Check for bot mention & isolate the command name if present
-        } else if (trigger.equals(ctx.getSelf().getMention())) {
-            commandName = ctx.getArgs().remove(0);
-        } else {
-            return;
-        }
-
-        // Get & null-check Module instance
-        final Module module = registry.getCommandInstance(commandName);
-        if (null == module) {
-            return;
-        }
+        // Get Module instance
+        Optional<Module> moduleOpt = commandNameOpt.flatMap(registry::getCommandInstance);
+        if (moduleOpt.isEmpty()) return;
 
         // Check permissions
-        if (!checkPerms(module, ctx)) {
-            return;
-        }
+        if (!checkPerms(moduleOpt.get(), context)) return;
 
         // Finally kick off command thread if all checks are passed
-        executor.execute(() -> {
-            Mono<?> invokeMono = Mono.fromRunnable(() -> module.invoke(ctx));
-            if (module.getInfo().shouldType()) {
-                ctx.getChannel()
-                        .typeUntil(invokeMono)
-                        .subscribe();
-            } else invokeMono.subscribe();
-        });
+        Mono<?> invokeMono = Mono.fromRunnable(() -> moduleOpt.ifPresent(m -> m.invoke(context)))
+                .publishOn(commandScheduler);
+        if (moduleOpt.get().getInfo().shouldType()) {
+            context.getChannel()
+                    .typeUntil(invokeMono)
+                    .subscribe();
+        } else invokeMono.subscribe();
+    }
+
+    private Optional<String> isolateCommand(CommandContext ctx, MessageCreateEvent event) {
+        // Fetch prefix from database
+        // GuildMeta is more than likely not null. We wouldn't have received the event unless a race condition occurred.
+        // We still null-check to be safe and get rid of the warning.
+        Optional<Snowflake> guildIdOptional = event.getGuildId();
+        if (guildIdOptional.isEmpty()) return Optional.empty();
+
+        final Optional<GuildMeta> meta = guildRepo.findById(event.getGuildId().orElseThrow());
+        if (meta.isEmpty()) return Optional.empty();
+        String prefix = meta.map(GuildMeta::getPrefix).get();
+
+        // Split on whitespace and retrieve first token
+        String firstToken = event.getMessage().getContent()
+                .map(msg -> msg.split("\\p{javaSpaceChar}"))
+                .map(components -> components[0])
+                .orElse("");
+
+        // Isolate command name
+        String commandName = null;
+        if (firstToken.indexOf(prefix) == 0) {
+            commandName = firstToken.replace(prefix, "");
+        } else if (firstToken.equals(ctx.getSelf().getMention())) {
+            commandName = ctx.getArgs().remove(0);
+        }
+        return Optional.ofNullable(commandName);
     }
 
     private boolean checkPerms(final Module module, final CommandContext ctx) {
@@ -146,5 +154,9 @@ public final class CommandDispatcher {
 
     public CommandRegistry getRegistry() {
         return registry;
+    }
+
+    public void shutdown() {
+        commandScheduler.dispose();
     }
 }

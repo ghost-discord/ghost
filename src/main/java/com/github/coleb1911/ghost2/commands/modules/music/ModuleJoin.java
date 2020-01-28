@@ -13,13 +13,14 @@ public final class ModuleJoin extends Module {
     public ModuleJoin() {
         super(new ModuleInfo.Builder(ModuleJoin.class)
                 .withName("join")
-                .withDescription("Make ghost2 join your current voice channel."));
+                .withDescription("Make ghost2 join your current voice channel"));
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         MusicUtils.fetchMusicService(ctx)
-                .doOnSuccess(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
+                .doOnNext(ignore -> ctx.getMessage().addReaction(REACT_OK).subscribe())
                 .doOnError(ignore -> ctx.getMessage().addReaction(REACT_WARNING).subscribe())
                 .subscribe();
     }

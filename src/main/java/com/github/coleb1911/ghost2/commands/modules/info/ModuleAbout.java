@@ -29,6 +29,7 @@ public final class ModuleAbout extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         Member me = ctx.getSelf();
 

@@ -17,8 +17,9 @@ public final class ModuleShutdown extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
         ctx.replyBlocking("Bye!");
-        References.getInstance().exit(0);
+        References.getApplicationInstance().exit(0);
     }
 }
