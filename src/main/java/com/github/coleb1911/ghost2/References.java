@@ -9,7 +9,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
  * A collection of globally accessible, commonly used, unchanging objects and constants.
  */
 public class References {
-    public static final String VERSION_STRING = "1.0";
+    public static final String VERSION_STRING = "1.1";
 
     private static final PermanentReference<Ghost2Application> APP_INSTANCE = new PermanentReference<>();
     private static final PermanentReference<GhostConfig> CONFIG = new PermanentReference<>();
