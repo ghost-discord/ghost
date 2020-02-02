@@ -2,6 +2,7 @@ package com.github.coleb1911.ghost2.commands.meta;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Attachment;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ public class CommandContext {
     private final List<String> args;        // Arguments passed to the command (split according to whitespace)
     private final List<User> userMentions;  // Users mentioned in the message
     private final List<Role> roleMentions;  // Roles mentioned in the message
+    private final Set<Attachment> msgAttachments;
 
     public CommandContext(MessageCreateEvent event) {
         client = event.getClient();
@@ -41,6 +44,7 @@ public class CommandContext {
         args = extractArgs(message);
         userMentions = message.getUserMentions().collectList().blockOptional().orElseThrow();
         roleMentions = message.getRoleMentions().collectList().blockOptional().orElseThrow();
+        msgAttachments = message.getAttachments();
     }
 
     public DiscordClient getClient() {
@@ -49,6 +53,10 @@ public class CommandContext {
 
     public Message getMessage() {
         return message;
+    }
+
+    public Set<Attachment> getMsgAttachments() {
+        return msgAttachments;
     }
 
     public Guild getGuild() {
