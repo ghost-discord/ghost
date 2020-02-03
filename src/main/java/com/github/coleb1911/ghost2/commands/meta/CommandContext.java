@@ -10,12 +10,12 @@ import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -32,7 +32,7 @@ public class CommandContext {
     private final List<String> args;        // Arguments passed to the command (split according to whitespace)
     private final List<User> userMentions;  // Users mentioned in the message
     private final List<Role> roleMentions;  // Roles mentioned in the message
-    private final Set<Attachment> msgAttachments;
+    private final List<Attachment> attachments;
 
     public CommandContext(MessageCreateEvent event) {
         client = event.getClient();
@@ -44,7 +44,7 @@ public class CommandContext {
         args = extractArgs(message);
         userMentions = message.getUserMentions().collectList().blockOptional().orElseThrow();
         roleMentions = message.getRoleMentions().collectList().blockOptional().orElseThrow();
-        msgAttachments = message.getAttachments();
+        attachments = List.copyOf(message.getAttachments());
     }
 
     public DiscordClient getClient() {
@@ -55,8 +55,8 @@ public class CommandContext {
         return message;
     }
 
-    public Set<Attachment> getMsgAttachments() {
-        return msgAttachments;
+    public List<Attachment> getAttachments() {
+        return attachments;
     }
 
     public Guild getGuild() {
@@ -98,6 +98,16 @@ public class CommandContext {
     }
 
     /**
+     * Reply to a command.
+     *
+     * @param consumer Message spec consumer
+     * @return {@linkplain Mono} containing the reply {@linkplain Message}
+     */
+    public Mono<Message> reply(Consumer<MessageCreateSpec> consumer) {
+        return channel.createMessage(consumer);
+    }
+
+    /**
      * Reply to a command via direct message.
      *
      * @param text Reply message content
@@ -127,6 +137,16 @@ public class CommandContext {
      */
     public Message replyBlocking(String text) {
         return reply(text).block();
+    }
+
+    /**
+     * Reply to a command. Blocks until finished.
+     *
+     * @param consumer Message spec consumer
+     * @return The reply {@linkplain Message}
+     */
+    public Message replyBlocking(Consumer<MessageCreateSpec> consumer) {
+        return channel.createMessage(consumer).block();
     }
 
     /**
