@@ -100,7 +100,7 @@ public final class ModuleTranslate extends Module {
     }
 
     private void postNoTranslationMessage(CommandContext ctx, String phrase) {
-        ctx.getChannel().createMessage("No translations were found for “" + phrase + "”.").block();
+        ctx.getChannel().createMessage("No translations were found for \"" + phrase + "\".").block();
     }
 
     private void postTranslationMessage(CommandContext ctx, String from, String to, String phrase, String translation) {

@@ -55,7 +55,7 @@ public final class MusicService {
     /**
      * Stream the tracks currently in the queue.
      *
-     * @return A {@link Flux<AudioTrack>}
+     * @return A {@link Flux} that will sequentially emit the {@link AudioTrack}s in the queue
      */
     public Flux<AudioTrack> streamTracks() {
         return queue.getTracks();
