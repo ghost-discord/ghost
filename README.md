@@ -1,6 +1,6 @@
-![ghost2](https://cbryant02.github.io/media/ghost2-banner.png)
+![ghost2](https://ghost2-discord.github.io/ghost2/media/banner.png)
 
-# ghost2 [![Build Status](https://travis-ci.org/ghost2-discord/ghost2.svg?branch=master)](https://travis-ci.org/ghost2-discord/ghost2) [![Maintainability](https://api.codeclimate.com/v1/badges/9cbad0d3562a8670ec20/maintainability)](https://codeclimate.com/github/cbryant02/ghost2/maintainability) [![Code Helpers](https://www.codetriage.com/cbryant02/ghost2/badges/users.svg)](https://www.codetriage.com/cbryant02/ghost2) [![Gitter](https://badges.gitter.im/ghost2-dev/community.svg)](https://gitter.im/ghost2-dev/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# ghost2 [![Build Status](https://travis-ci.org/ghost2-discord/ghost2.svg?branch=master)](https://travis-ci.org/ghost2-discord/ghost2) [![Maintainability](https://api.codeclimate.com/v1/badges/4fc3a95b114638f25db6/maintainability)](https://codeclimate.com/github/ghost2-discord/ghost2/maintainability) [![Gitter](https://badges.gitter.im/ghost2-dev/community.svg)](https://gitter.im/ghost2-dev/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ghost2 is a modular, multi-feature Discord bot, and the spiritual successor to the original [ghost](https://github.com/ghost2-discord/ghost).
 Among its features are a Spring-powered persistence layer, an embedded H2 database, simpler command modules,
