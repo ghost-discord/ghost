@@ -91,7 +91,7 @@ public abstract class ImageManipulationModule extends Module {
     }
 
     private boolean isValidImage(ImagePlus image) {
-        return image.getWidth() == 0 && image.getHeight() == 0;
+        return image.getWidth() != 0 && image.getHeight() != 0;
     }
 
     protected abstract void manipulate(ImagePlus image);
