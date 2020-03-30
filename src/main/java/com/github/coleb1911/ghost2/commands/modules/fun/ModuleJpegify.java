@@ -6,6 +6,7 @@ import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import org.pmw.tinylog.Logger;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.IIOImage;
@@ -73,8 +74,16 @@ public final class ModuleJpegify extends Module {
             return;
         }
 
-        // Create and return jpeg image
-        if(!createImage(img, ctx)) return;
+        // Prevents bogus colorspace error
+        BufferedImage copy = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = copy.createGraphics();
+        g2d.setColor(Color.WHITE); // Or what ever fill color you want...
+        g2d.fillRect(0, 0, copy.getWidth(), copy.getHeight());
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        // Create image and return
+        if(!createImage(copy, ctx)) return;
 
         try (BufferedInputStream resultImageStream = new BufferedInputStream(new FileInputStream(OUTPUT_FILE_NAME))) {
             ctx.replyBlocking(messageCreateSpec -> messageCreateSpec.addFile(OUTPUT_FILE_NAME, resultImageStream));
@@ -115,6 +124,7 @@ public final class ModuleJpegify extends Module {
             os = new FileOutputStream(compressedImageFile);
         } catch (FileNotFoundException e) {
             ctx.replyBlocking(FAILED);
+            Logger.error(e);
             return false;
         }
 
@@ -124,6 +134,7 @@ public final class ModuleJpegify extends Module {
             ios = ImageIO.createImageOutputStream(os);
         } catch (IOException e) {
             ctx.replyBlocking(FAILED);
+            Logger.error(e);
             return false;
         }
         writer.setOutput(ios);
@@ -139,6 +150,7 @@ public final class ModuleJpegify extends Module {
             writer.write(null, new IIOImage(img, null, null), param);
         } catch (IOException e) {
             ctx.replyBlocking(FAILED);
+            Logger.error(e);
             return false;
         }
 
@@ -147,6 +159,7 @@ public final class ModuleJpegify extends Module {
             ios.close();
         } catch (IOException e) {
             ctx.replyBlocking(FAILED);
+            Logger.error(e);
             return false;
         }
         writer.dispose();
