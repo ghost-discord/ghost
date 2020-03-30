@@ -22,7 +22,7 @@ public final class MusicUtils {
     /**
      * Gets a {@linkplain MusicService} by a user's demand. Performs preliminary
      * permission checks, and responds dynamically according to status.
-     * <br/>
+     * <br>
      * Side-effects: this method will create a music service if one does not already exist
      * for the given guild.
      *
