@@ -34,5 +34,5 @@ open module ghost2.main {
     requires tinylog;
     requires owner;
     requires org.jsoup;
-    requires ij;
+    requires java.desktop;
 }

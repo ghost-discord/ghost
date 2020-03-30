@@ -3,6 +3,7 @@ package com.github.coleb1911.ghost2.commands.modules.fun;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
 import javax.validation.constraints.NotNull;
 import java.util.Random;
@@ -32,6 +33,7 @@ public final class Module8Ball extends Module {
             "Very doubtful."
     };
 
+    @ReflectiveAccess
     public Module8Ball() {
         super(new ModuleInfo.Builder(Module8Ball.class)
                 .withName("8ball")
@@ -39,15 +41,16 @@ public final class Module8Ball extends Module {
     }
 
     @Override
+    @ReflectiveAccess
     public void invoke(@NotNull CommandContext ctx) {
         // See if a question was asked
         try {
             ctx.getArgs().get(0);
         } catch(Exception e) {
-            ctx.reply("You must ask a yes or no question use the `8ball` command");
+            ctx.replyBlocking("You must ask a yes or no question use the `8ball` command");
             return;
         }
-        ctx.reply("Magic 8 ball says: " + getRandomElement(OUTCOMES));
+        ctx.replyBlocking("Magic 8 ball says: " + getRandomElement(OUTCOMES));
     }
 
     public String getRandomElement(String[] list) {

@@ -3,6 +3,7 @@ package com.github.coleb1911.ghost2.commands.modules.utility;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
+import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 
 import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
@@ -12,6 +13,7 @@ public final class ModuleCalc extends Module {
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.#");
 
+    @ReflectiveAccess
     public ModuleCalc() {
         super(new ModuleInfo.Builder(ModuleScreenshare.class)
                 .withName("calc")
@@ -19,29 +21,30 @@ public final class ModuleCalc extends Module {
     }
 
     @Override
-    public void invoke(@NotNull CommandContext ctx) {
+    @ReflectiveAccess
+    public void invoke(@NotNull final CommandContext ctx) {
         // Check if args are present
         try {
             ctx.getArgs().get(0);
         } catch(Exception e) {
-            ctx.reply("Provide an expression to use the `calc` command.");
+            ctx.replyBlocking("Provide an expression to use the `calc` command.");
             return;
         }
 
         // Parse the args, check for syntax, and reply with equation
         String expression = parseArgs(ctx.getArgs());
         try {
-            ctx.reply(DECIMAL_FORMAT.format(eval(expression)));
+            ctx.replyBlocking(DECIMAL_FORMAT.format(eval(expression)));
         } catch(IllegalArgumentException e) {
-            ctx.reply(e.getMessage());
+            ctx.replyBlocking(e.getMessage());
         }
     }
 
     private String parseArgs(List<String> args) {
-        String arg = "";
-        for(String s : args) arg = arg + s;
+        StringBuilder arg = new StringBuilder();
+        for(String s : args) arg.append(s);
 
-        return arg;
+        return arg.toString();
     }
 
     public static double eval(final String str) {
@@ -64,7 +67,8 @@ public final class ModuleCalc extends Module {
             double parse() {
                 nextChar();
                 double x = parseExpression();
-                if (pos < str.length()) throw new IllegalArgumentException("Unexpected: " + (char)ch);
+                if (pos < str.length())
+                    throw new IllegalArgumentException("Unexpected: " + (char)ch);
                 return x;
             }
 
