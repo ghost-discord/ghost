@@ -5,20 +5,21 @@ import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.util.Permission;
 import discord4j.core.object.util.PermissionSet;
 import ij.ImagePlus;
-import ij.process.ImageConverter;
+import ij.plugin.filter.GaussianBlur;
 
 import java.io.IOException;
 
 
-public final class ModuleGrayscale extends ImageManipulationModule {
-    private static final String EFFECT_NAME = "grayscale";
+public final class ModuleBlur extends ImageManipulationModule {
+    private static final String EFFECT_NAME = "blur";
+    private static final double SIGMA_TO_SIZE_RELATION = 0.02;
 
     @ReflectiveAccess
-    public ModuleGrayscale() throws IOException {
-        super(new ModuleInfo.Builder(ModuleGrayscale.class)
+    public ModuleBlur() throws IOException {
+        super(new ModuleInfo.Builder(ModuleBlur.class)
                 .withName(EFFECT_NAME)
-                .withDescription("Convert an image to grayscale")
-                .withAliases("gs", "gray")
+                .withDescription("Blur image")
+                .withAliases("blur", "blr")
                 .withBotPermissions(PermissionSet.of(Permission.ATTACH_FILES))
                 .withBotPermissions(PermissionSet.of(Permission.EMBED_LINKS))
         );
@@ -26,13 +27,12 @@ public final class ModuleGrayscale extends ImageManipulationModule {
 
     @Override
     protected void manipulate(ImagePlus image) {
-        image.getProcessor().convertToRGB();
-        ImageConverter converter = new ImageConverter(image);
-        converter.convertToGray16();
+        int longestSide = Math.max(image.getWidth(), image.getHeight());
+        new GaussianBlur().blurGaussian(image.getProcessor(), longestSide * SIGMA_TO_SIZE_RELATION);
     }
 
     @Override
     protected String effectName() {
-        return "grayscale";
+        return EFFECT_NAME;
     }
 }
