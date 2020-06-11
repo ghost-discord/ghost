@@ -46,6 +46,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.12.1'
+    implementation group: 'net.imagej', name: 'ij', version: '1.53b'
 
     // JUnit
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.0'
