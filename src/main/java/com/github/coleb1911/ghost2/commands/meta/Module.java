@@ -3,6 +3,8 @@ package com.github.coleb1911.ghost2.commands.meta;
 import discord4j.core.object.reaction.ReactionEmoji;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.net.ProtocolException;
 
 /**
  * A single command module.
@@ -53,7 +55,7 @@ public abstract class Module {
      * @param ctx Command context. <b>Cannot be null.</b>
      */
     @ReflectiveAccess
-    public abstract void invoke(@NotNull final CommandContext ctx);
+    public abstract void invoke(@NotNull final CommandContext ctx) throws IOException;
 
     @Override
     public boolean equals(Object other) {

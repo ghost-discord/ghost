@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -72,8 +73,15 @@ public final class CommandDispatcher {
         if (!checkPerms(moduleOpt.get(), context)) return;
 
         // Finally kick off command thread if all checks are passed
-        Mono<?> invokeMono = Mono.fromRunnable(() -> moduleOpt.ifPresent(m -> m.invoke(context)))
+        Mono<?> invokeMono = Mono.fromRunnable(() -> moduleOpt.ifPresent(m -> {
+            try {
+                m.invoke(context);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }))
                 .publishOn(commandScheduler);
+
         if (moduleOpt.get().getInfo().shouldType()) {
             context.getChannel()
                     .typeUntil(invokeMono)
