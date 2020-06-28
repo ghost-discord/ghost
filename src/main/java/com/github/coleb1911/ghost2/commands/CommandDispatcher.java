@@ -73,7 +73,8 @@ public final class CommandDispatcher {
         if (!checkPerms(moduleOpt.get(), context)) return;
 
         // Finally kick off command thread if all checks are passed
-        Mono<?> invokeMono = Mono.fromRunnable(() -> moduleOpt.ifPresent(m -> m.invoke(context)))
+        //TODO: get rid of try catch per Caleb Bryant's suggestion
+        Mono<?> invokeMono = Mono.fromRunnable(() -> moduleOpt.ifPresent(m -> {
             try {
                 m.invoke(context);
             } catch (IOException e) {
@@ -81,7 +82,6 @@ public final class CommandDispatcher {
             }
         }))
                 .publishOn(commandScheduler);
-
         if (moduleOpt.get().getInfo().shouldType()) {
             context.getChannel()
                     .typeUntil(invokeMono)
