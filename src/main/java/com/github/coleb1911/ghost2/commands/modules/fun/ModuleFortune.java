@@ -1,5 +1,10 @@
 package com.github.coleb1911.ghost2.commands.modules.fun;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
@@ -12,9 +17,11 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.coleb1911.ghost2.utility.RestUtils;
+import org.pmw.tinylog.Logger;
+import org.springframework.web.client.RestTemplate;
 
 
 /** This class provides a module for a fortune cookie command, pulled from an API with different categories available
@@ -22,6 +29,8 @@ import org.json.JSONObject;
  */
 public final class ModuleFortune extends Module {
     private static final Random random = new Random();
+    private static final RestTemplate TEMPLATE = RestUtils.defaultRestTemplate();
+
     private final String API_URL = " http://yerkee.com/api/fortune/";
     private final String[] FORTUNE_CATEGORIES = {"all", "bible", "computers", "cookie", "definitions", "miscellaneous",
             "people", "platitudes", "politics", "science", "wisdom"};
@@ -69,26 +78,27 @@ public final class ModuleFortune extends Module {
 
         int responseCode = conn.getResponseCode();
 
-        // read response
-        String json = "";
+        // read response code
         if(responseCode != 200) {
             throw new RuntimeException("Response Code" + responseCode);
         } else {
-            Scanner scanner = new Scanner(url.openStream());
-            while(scanner.hasNext()) {
-                json += scanner.nextLine();
-            }
-
-            scanner.close();
-
-            // parse JSON
             try {
-                JSONObject obj = new JSONObject(json);
-                String fortune = (String) obj.get("fortune");
-                ctx.replyBlocking(fortune);
-            } catch (JSONException e) {
-                System.out.println("JSON parsing Exception");
+                //TODO: write JSON to obj how Caleb Bryant was
+                Fortune fortune = mapper.readValue(jsonString, Fortune.class);
+                // send fortune back to channel
+                ctx.replyBlocking(fortune.getFortune());
+            } catch (JsonParseException e) {
+                e.printStackTrace();
+                Logger.debug(e);
+                ctx.replyBlocking("JsonParseException " + e);
             }
         }
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Fortune {
+        @JsonProperty("fortune")
+        private String fortune;
+
+        String getFortune() { return this.fortune; }
     }
 }
