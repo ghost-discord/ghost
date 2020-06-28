@@ -35,7 +35,7 @@ public final class ModuleFortune extends Module {
     
     @Override
     @ReflectiveAccess
-    public void invoke(@NotNull CommandContext ctx) throws IOException {
+    public void invoke(@NotNull CommandContext ctx) {
         String category;
         String categorySelected;
 
