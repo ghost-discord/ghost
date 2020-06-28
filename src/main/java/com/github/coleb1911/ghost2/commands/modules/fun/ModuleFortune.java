@@ -70,7 +70,6 @@ public final class ModuleFortune extends Module {
             category = FORTUNE_CATEGORIES[index];
         }
 
-        //TODO: read JSON and map it to a fortune object
         try {
             final ModuleFortune.Fortune fortune = TEMPLATE.getForObject(API_URL + category,
                     ModuleFortune.Fortune.class);
