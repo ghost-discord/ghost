@@ -44,7 +44,6 @@ public final class ModuleFortune extends Module {
     
     @Override
     @ReflectiveAccess
-    public void invoke(@NotNull CommandContext ctx) throws IOException {
     public void invoke(@NotNull CommandContext ctx) {
         String category;
         String categorySelected;
@@ -95,6 +94,7 @@ public final class ModuleFortune extends Module {
             }
         }
     }
+<<<<<<< HEAD
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Fortune {
         @JsonProperty("fortune")
@@ -102,7 +102,7 @@ public final class ModuleFortune extends Module {
 
         String getFortune() { return this.fortune; }
     }
-}}
+}
 =======
 }
 >>>>>>> 20672d915462f7cc5d2ed532966354b1cc17db4a
