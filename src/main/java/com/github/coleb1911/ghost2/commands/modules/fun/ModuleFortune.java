@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.coleb1911.ghost2.utility.RestUtils;
 import org.pmw.tinylog.Logger;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -30,8 +31,9 @@ import org.springframework.web.client.RestTemplate;
 public final class ModuleFortune extends Module {
     private static final Random random = new Random();
     private static final RestTemplate TEMPLATE = RestUtils.defaultRestTemplate();
+    private static final String REPLY_FETCH_ERROR = "Error trying to retrieve fortune.";
 
-    private final String API_URL = " http://yerkee.com/api/fortune/";
+    private final String API_URL = "http://yerkee.com/api/fortune/";
     private final String[] FORTUNE_CATEGORIES = {"all", "bible", "computers", "cookie", "definitions", "miscellaneous",
             "people", "platitudes", "politics", "science", "wisdom"};
 
@@ -68,33 +70,20 @@ public final class ModuleFortune extends Module {
             category = FORTUNE_CATEGORIES[index];
         }
 
-        // make a url and cast it as a HttpURLConnection
-        String idURL = API_URL + category;
-        URL url = new URL(idURL);
-        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-
-        conn.setRequestMethod("GET");
-        conn.connect();
-
-        int responseCode = conn.getResponseCode();
-
-        // read response code
-        if(responseCode != 200) {
-            throw new RuntimeException("Response Code" + responseCode);
-        } else {
-            try {
-                //TODO: write JSON to obj how Caleb Bryant was
-                Fortune fortune = mapper.readValue(jsonString, Fortune.class);
-                // send fortune back to channel
+        //TODO: read JSON and map it to a fortune object
+        try {
+            final ModuleFortune.Fortune fortune = TEMPLATE.getForObject(API_URL + category,
+                    ModuleFortune.Fortune.class);
+            if (fortune == null) {
+                ctx.replyBlocking(REPLY_FETCH_ERROR);
+                return;
+            } else {
                 ctx.replyBlocking(fortune.getFortune());
-            } catch (JsonParseException e) {
-                e.printStackTrace();
-                Logger.debug(e);
-                ctx.replyBlocking("JsonParseException " + e);
             }
+        } catch (HttpStatusCodeException exception) {
+            ctx.replyBlocking(REPLY_FETCH_ERROR);
         }
     }
-<<<<<<< HEAD
     @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Fortune {
         @JsonProperty("fortune")
@@ -103,6 +92,4 @@ public final class ModuleFortune extends Module {
         String getFortune() { return this.fortune; }
     }
 }
-=======
-}
->>>>>>> 20672d915462f7cc5d2ed532966354b1cc17db4a
+
