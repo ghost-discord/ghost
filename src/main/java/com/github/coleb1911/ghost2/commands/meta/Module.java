@@ -55,7 +55,7 @@ public abstract class Module {
      * @param ctx Command context. <b>Cannot be null.</b>
      */
     @ReflectiveAccess
-    public abstract void invoke(@NotNull final CommandContext ctx) throws IOException;
+    public abstract void invoke(@NotNull final CommandContext ctx);
 
     @Override
     public boolean equals(Object other) {
