@@ -75,11 +75,7 @@ public final class CommandDispatcher {
         // Finally kick off command thread if all checks are passed
         //TODO: get rid of try catch per Caleb Bryant's suggestion
         Mono<?> invokeMono = Mono.fromRunnable(() -> moduleOpt.ifPresent(m -> {
-            try {
                 m.invoke(context);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }))
                 .publishOn(commandScheduler);
         if (moduleOpt.get().getInfo().shouldType()) {
