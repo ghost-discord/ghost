@@ -14,10 +14,8 @@ public interface GhostConfig extends Config, Accessible, Mutable, Reloadable {
     @Key("ghost.token")
     String token();
 
-    // Available only on request, no documentation
-    // https://community.watch2gether.com
+    // https://community.w2g.tv/t/watch2gether-api-documentation/133767
     @Key("ghost.keys.watch2gether")
-    @DefaultValue("ujww234232ewegwgwef4d")
     String w2gApiKey();
 
     // https://developers.google.com/youtube/v3
