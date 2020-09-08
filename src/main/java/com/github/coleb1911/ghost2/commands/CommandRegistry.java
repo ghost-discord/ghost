@@ -19,8 +19,10 @@ import org.springframework.stereotype.Component;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -53,10 +55,13 @@ public final class CommandRegistry {
 
         Reflections reflections = new Reflections(MODULE_PACKAGE);
         Set<Class<? extends Module>> moduleClasses = reflections.getSubTypesOf(Module.class);
-        for (Class<? extends Module> moduleClass : moduleClasses) {
-            // Make sure module directly extends base class
-            if (!Module.class.equals(moduleClass.getSuperclass())) {
-                Logger.warn(moduleClass.getSimpleName() + " does not directly extend Module. It will be excluded from the command list.");
+
+        for (Iterator<Class<? extends Module>> iterator = moduleClasses.iterator(); iterator.hasNext(); ) {
+            Class<? extends Module> moduleClass = iterator.next();
+
+            // Skip abstract subclasses (e.g. ImageManipulationModule)
+            if (Modifier.isAbstract(moduleClass.getModifiers())) {
+                iterator.remove();
                 continue;
             }
 
