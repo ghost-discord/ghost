@@ -2,7 +2,7 @@ package com.github.coleb1911.ghost2.database.repos;
 
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
-import discord4j.core.object.util.Snowflake;
+import discord4j.common.util.Snowflake;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;

@@ -8,7 +8,7 @@ import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.database.entities.ApplicationMeta;
 import com.github.coleb1911.ghost2.database.repos.ApplicationMetaRepository;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.util.Snowflake;
+import discord4j.common.util.Snowflake;
 import org.pmw.tinylog.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -57,13 +57,13 @@ public final class ModuleClaimOperator extends Module {
 
         // Listen for & validate key
         // If valid, the new operator's ID gets saved to ghost.properties and the config values are updated
-        ctx.getClient().getEventDispatcher().on(MessageCreateEvent.class)
+        ctx.getGateway().on(MessageCreateEvent.class)
                 .filter(event -> event.getMember().isPresent())
                 .filter(event -> ctx.getInvoker().getId().equals(event.getMember().orElseThrow().getId()))
                 .filter(event -> ctx.getChannel().getId().equals(event.getMessage().getChannelId()))
                 .take(1)
                 .doOnNext(event -> {
-                    if (event.getMessage().getContent().orElse("").equals(key)) {
+                    if (event.getMessage().getContent().equals(key)) {
                         ctx.replyBlocking(REPLY_VALID);
                         Snowflake id = ctx.getInvoker().getId();
                         amRepo.save(new ApplicationMeta(id.asLong()));

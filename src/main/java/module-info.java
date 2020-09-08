@@ -22,6 +22,8 @@ open module ghost2.main {
     requires discord4j.core;
     requires discord4j.rest;
     requires discord4j.voice;
+    requires discord4j.gateway;
+    requires discord4j.discordjson;
     requires lavaplayer;
     requires reactor.core;
     requires org.reactivestreams;
@@ -35,4 +37,5 @@ open module ghost2.main {
     requires owner;
     requires org.jsoup;
     requires ij;
+    requires discord4j.common;
 }

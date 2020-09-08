@@ -6,8 +6,10 @@ import com.github.coleb1911.ghost2.database.entities.GuildMeta;
 import com.github.coleb1911.ghost2.database.repos.ApplicationMetaRepository;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import com.github.coleb1911.ghost2.music.MusicServiceManager;
+import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
@@ -15,7 +17,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
-import discord4j.core.object.util.Snowflake;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.Logger;
@@ -53,7 +54,7 @@ public class Ghost2Application implements ApplicationRunner {
     private final CommandDispatcher dispatcher;
     private final GuildMetaRepository guildRepo;
     private final ApplicationMetaRepository amRepo;
-    private DiscordClient client;
+    private GatewayDiscordClient gateway;
     private RandomAccessFile lockFile;
     private FileLock lock;
 
@@ -106,14 +107,10 @@ public class Ghost2Application implements ApplicationRunner {
                 .writingThread(true)
                 .activate();
 
-        // Create client
-        client = new DiscordClientBuilder(token)
-                .setInitialPresence(Presence.online(Activity.listening("your commands.")))
+        // Build client
+        DiscordClient client = DiscordClientBuilder
+                .create(token)
                 .build();
-        References.setClient(client);
-
-        // Register event listeners
-        this.registerListeners(client);
 
         // Get current bot operator, log notice if null
         long operatorId = amRepo.getOperatorId();
@@ -121,14 +118,19 @@ public class Ghost2Application implements ApplicationRunner {
         else Logger.info("Current operator is " + operatorId);
 
         // Log in and block main thread until bot logs out
-        client.login()
+        gateway = client.gateway()
+                .setInitialStatus(shard -> Presence.online(Activity.listening("to your commands.")))
+                .login()
+                .doOnError(IOException.class, throwable -> {
+                    Logger.error(ERROR_CONNECTION);
+                    exit(1);
+                })
                 .retry(5L)
-                .doOnError(throwable -> {
-                    if (throwable instanceof IOException) {
-                        Logger.error(ERROR_CONNECTION);
-                        exit(1);
-                    }
-                }).block();
+                .block();
+
+        registerListeners(gateway);
+        References.setGateway(gateway);
+        gateway.onDisconnect().block();
     }
 
     /**
@@ -142,7 +144,7 @@ public class Ghost2Application implements ApplicationRunner {
         dispatcher.shutdown();
 
         // Log out bot
-        client.logout().block();
+        gateway.logout().block();
 
         // Release application lock
         this.unlock();
@@ -184,18 +186,18 @@ public class Ghost2Application implements ApplicationRunner {
     /**
      * Registers all the event listeners ghost2 needs
      *
-     * @param client Client object to register listeners on
+     * @param gateway Gateway object to register listeners on
      */
-    private void registerListeners(DiscordClient client) {
+    private void registerListeners(GatewayDiscordClient gateway) {
         // Drop guilds we're no longer in on startup (if any)
         // Start with a list of IDs of every guild in the database, and remove guilds as we receive them.
         // Anything remaining is invalid and dropped from the database.
         // We also add any new guilds here.
         List<Long> idsToRemove = new ArrayList<>();
         guildRepo.findAll().forEach(meta -> idsToRemove.add(meta.getId()));
-        client.getEventDispatcher().on(ReadyEvent.class)
+        gateway.on(ReadyEvent.class)
                 .map(event -> event.getGuilds().size())
-                .flatMap(size -> client.getEventDispatcher()
+                .flatMap(size -> gateway.getEventDispatcher()
                         .on(GuildCreateEvent.class)
                         .take(size)
                         .collectList())
@@ -214,7 +216,7 @@ public class Ghost2Application implements ApplicationRunner {
                 });
 
         // Listen for new guilds
-        client.getEventDispatcher().on(GuildCreateEvent.class)
+        gateway.on(GuildCreateEvent.class)
                 .map(GuildCreateEvent::getGuild)
                 .filter(Objects::nonNull)
                 .filter(guild -> guildRepo.existsById(guild.getId().asLong()))
@@ -223,7 +225,7 @@ public class Ghost2Application implements ApplicationRunner {
                 .subscribe(guildRepo::save);
 
         // Drop guilds when we're removed from them
-        client.getEventDispatcher().on(GuildDeleteEvent.class)
+        gateway.on(GuildDeleteEvent.class)
                 .filter(Predicate.not(GuildDeleteEvent::isUnavailable))
                 .map(GuildDeleteEvent::getGuildId)
                 .map(Snowflake::asLong)
@@ -231,11 +233,11 @@ public class Ghost2Application implements ApplicationRunner {
                 .subscribe(guildRepo::deleteById);
 
         // Send MessageCreateEvents to CommandDispatcher
-        client.getEventDispatcher().on(MessageCreateEvent.class)
+        gateway.on(MessageCreateEvent.class)
                 .filter(e -> e.getMember().isPresent() && !e.getMember().get().isBot())
                 .subscribe(dispatcher::onMessageEvent);
 
         // Register module event listeners
-        dispatcher.getRegistry().registerEventListeners(client);
+        dispatcher.getRegistry().registerEventListeners(gateway);
     }
 }

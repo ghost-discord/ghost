@@ -10,9 +10,9 @@ import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
 import discord4j.core.event.domain.guild.MemberJoinEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Role;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
-import discord4j.core.object.util.Snowflake;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
+import discord4j.common.util.Snowflake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 

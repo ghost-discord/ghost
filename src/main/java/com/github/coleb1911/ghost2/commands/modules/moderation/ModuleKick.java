@@ -5,8 +5,8 @@ import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import discord4j.rest.http.client.ClientException;
 
 import javax.validation.constraints.NotNull;

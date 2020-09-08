@@ -6,6 +6,7 @@ import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import org.pmw.tinylog.Logger;
 import org.reflections.Reflections;
@@ -159,7 +160,7 @@ public final class CommandRegistry {
      * <p>
      * This method is for Ghost2Application only. Do not call it.
      */
-    public void registerEventListeners(DiscordClient client) {
+    public void registerEventListeners(GatewayDiscordClient gateway) {
         for (Module instance : instances) {
             // Read all the module's public methods
             for (Method method : instance.getClass().getMethods()) {
@@ -171,7 +172,8 @@ public final class CommandRegistry {
                 beanFactory.autowireBean(instance);
 
                 // Register the listener
-                client.getEventDispatcher().on(eventType.get())
+
+                gateway.on(eventType.get())
                         .subscribe(cEvent -> {
                             try {
                                 method.invoke(instance, cEvent);

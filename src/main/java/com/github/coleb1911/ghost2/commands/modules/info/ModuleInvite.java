@@ -4,6 +4,7 @@ import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
+import discord4j.common.util.Snowflake;
 
 import javax.validation.constraints.NotNull;
 
@@ -21,7 +22,7 @@ public final class ModuleInvite extends Module {
     @Override
     @ReflectiveAccess
     public void invoke(@NotNull final CommandContext ctx) {
-        ctx.getClient().getSelfId()
-                .ifPresent(id -> ctx.replyBlocking(BASE_URL + id.asLong()));
+        final Snowflake id = ctx.getGateway().getSelfId();
+        ctx.replyBlocking(BASE_URL + id.asLong());
     }
 }

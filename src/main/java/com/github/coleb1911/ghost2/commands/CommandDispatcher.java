@@ -9,10 +9,11 @@ import com.github.coleb1911.ghost2.commands.modules.operator.ModuleClaimOperator
 import com.github.coleb1911.ghost2.database.entities.GuildMeta;
 import com.github.coleb1911.ghost2.database.repos.ApplicationMetaRepository;
 import com.github.coleb1911.ghost2.database.repos.GuildMetaRepository;
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
-import discord4j.core.object.util.Snowflake;
+
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Component;
@@ -93,7 +94,7 @@ public final class CommandDispatcher {
         String prefix = meta.map(GuildMeta::getPrefix).get();
 
         // Split on whitespace and retrieve first token
-        String firstToken = event.getMessage().getContent()
+        String firstToken = Optional.of(event.getMessage().getContent())
                 .map(msg -> msg.split("\\p{javaSpaceChar}"))
                 .map(components -> components[0])
                 .orElse("");

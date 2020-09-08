@@ -10,15 +10,18 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
-import discord4j.core.DiscordClient;
+
+import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
-import discord4j.core.object.util.Snowflake;
+
 import org.pmw.tinylog.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,8 +59,8 @@ public final class MusicServiceManager {
             Logger.info("Created new MusicService for guild " + guildId.asString());
 
             // Destroy service on disconnect
-            final DiscordClient self = References.getClient();
-            self.getEventDispatcher().on(VoiceStateUpdateEvent.class)
+            final GatewayDiscordClient self = References.getGateway();
+            self.on(VoiceStateUpdateEvent.class)
                     .filter(ev -> ev.getClient().equals(self))
                     .filterWhen(ev -> ev.getCurrent().getChannel().map(Objects::isNull).defaultIfEmpty(true))
                     .map(ignore -> service.getGuildId())

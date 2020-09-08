@@ -52,7 +52,7 @@ public final class ModulePlay extends Module {
         // Search and load result
         final YoutubeSearchResult searchResult = provider.search(query);
         if (searchResult == null) {
-            ctx.replyBlocking("No results found for \"" + query + "\"");
+            ctx.replyBlocking("No results found for \"" + query + "\".");
             return;
         }
         loadTrack(ctx, searchResult.getUri(), r -> ctx.replyEmbedBlocking(searchResult.populateEmbed()));

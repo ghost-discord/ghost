@@ -1,14 +1,14 @@
 package com.github.coleb1911.ghost2.commands.meta;
 
-import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Attachment;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.entity.Role;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import reactor.core.publisher.Mono;
@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -23,32 +24,32 @@ import java.util.stream.Collectors;
  * Contains relevant information for when a command is invoked.
  */
 public class CommandContext {
-    private final DiscordClient client;     // Client that received the message event (i.e. us)
-    private final Message message;          // Message that triggered the command
-    private final Guild guild;              // Guild the message was sent in
-    private final MessageChannel channel;   // Channel the message was sent in
-    private final Member invoker;           // User that invoked the command (as a member of the guild)
-    private final Member self;              // The bot user (as a member of the guild)
-    private final List<String> args;        // Arguments passed to the command (split according to whitespace)
-    private final List<User> userMentions;  // Users mentioned in the message
-    private final List<Role> roleMentions;  // Roles mentioned in the message
-    private final List<Attachment> attachments;
+    private final GatewayDiscordClient gateway; // Client that received the message event (i.e. us)
+    private final Message message;              // Message that triggered the command
+    private final Guild guild;                  // Guild the message was sent in
+    private final MessageChannel channel;       // Channel the message was sent in
+    private final Member invoker;               // User that invoked the command (as a member of the guild)
+    private final Member self;                  // The bot user (as a member of the guild)
+    private final List<String> args;            // Arguments passed to the command (split according to whitespace)
+    private final List<User> userMentions;      // Users mentioned in the message
+    private final List<Role> roleMentions;      // Roles mentioned in the message
+    private final List<Attachment> attachments; // Files attached to the message
 
     public CommandContext(MessageCreateEvent event) {
-        client = event.getClient();
+        gateway = event.getClient();
         message = event.getMessage();
         guild = event.getGuild().blockOptional().orElseThrow();
         channel = message.getChannel().blockOptional().orElseThrow();
         invoker = event.getMember().orElseThrow();
-        self = event.getClient().getSelfId().map(guild::getMemberById).map(Mono::block).orElseThrow();
+        self = Mono.just(event.getClient().getSelfId()).flatMap(guild::getMemberById).blockOptional().orElseThrow();
         args = extractArgs(message);
         userMentions = message.getUserMentions().collectList().blockOptional().orElseThrow();
         roleMentions = message.getRoleMentions().collectList().blockOptional().orElseThrow();
         attachments = List.copyOf(message.getAttachments());
     }
 
-    public DiscordClient getClient() {
-        return client;
+    public GatewayDiscordClient getGateway() {
+        return gateway;
     }
 
     public Message getMessage() {
@@ -171,7 +172,7 @@ public class CommandContext {
     }
 
     private static List<String> extractArgs(Message message) {
-        String[] components = message.getContent()
+        String[] components = Optional.of(message.getContent())
                 .map(msg -> msg.split("\\p{javaSpaceChar}"))
                 .orElse(new String[0]);
         return Arrays.stream(components)

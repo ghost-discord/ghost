@@ -1,6 +1,6 @@
 package com.github.coleb1911.ghost2.commands.meta;
 
-import discord4j.core.object.util.PermissionSet;
+import discord4j.rest.util.PermissionSet;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotBlank;

@@ -8,8 +8,10 @@ import com.github.coleb1911.ghost2.commands.meta.Module;
 import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import com.github.coleb1911.ghost2.utility.RestUtils;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
+
+
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import org.pmw.tinylog.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.client.HttpStatusCodeException;

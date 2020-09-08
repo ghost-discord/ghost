@@ -1,8 +1,10 @@
 package com.github.coleb1911.ghost2.music;
 
 import com.github.coleb1911.ghost2.References;
-import discord4j.core.object.entity.VoiceChannel;
-import discord4j.core.object.util.Snowflake;
+import discord4j.common.util.Snowflake;
+
+
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
@@ -15,7 +17,7 @@ public final class VoiceSession {
     private final AtomicReference<VoiceSession.State> state = new AtomicReference<>();
 
     Mono<Void> join(final Snowflake channelId, final AudioProvider provider) {
-        return References.getClient().getChannelById(channelId)
+        return References.getGateway().getChannelById(channelId)
                 .cast(VoiceChannel.class)
                 .flatMap(ch -> ch.join(spec -> {
                     spec.setSelfDeaf(true);

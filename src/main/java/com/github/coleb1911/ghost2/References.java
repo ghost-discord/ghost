@@ -2,6 +2,7 @@ package com.github.coleb1911.ghost2;
 
 import com.github.coleb1911.ghost2.utility.PermanentReference;
 import discord4j.core.DiscordClient;
+import discord4j.core.GatewayDiscordClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -13,7 +14,7 @@ public class References {
 
     private static final PermanentReference<Ghost2Application> APP_INSTANCE = new PermanentReference<>();
     private static final PermanentReference<GhostConfig> CONFIG = new PermanentReference<>();
-    private static final PermanentReference<DiscordClient> CLIENT = new PermanentReference<>();
+    private static final PermanentReference<GatewayDiscordClient> GATEWAY = new PermanentReference<>();
     private static final PermanentReference<Long> START_TIME = new PermanentReference<>();
 
     private References() {
@@ -42,8 +43,8 @@ public class References {
         return APP_INSTANCE.get();
     }
 
-    public static DiscordClient getClient() {
-        return CLIENT.get();
+    public static GatewayDiscordClient getGateway() {
+        return GATEWAY.get();
     }
 
     public static GhostConfig getConfig() {
@@ -60,8 +61,8 @@ public class References {
         APP_INSTANCE.set(appInstance);
     }
 
-    static void setClient(final DiscordClient client) {
-        CLIENT.set(client);
+    static void setGateway(final GatewayDiscordClient client) {
+        GATEWAY.set(client);
     }
 
     static void setStartTime(final long startTimeMs) {

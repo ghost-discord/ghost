@@ -6,13 +6,15 @@ import com.github.coleb1911.ghost2.commands.meta.ModuleInfo;
 import com.github.coleb1911.ghost2.commands.meta.ReflectiveAccess;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.TextChannel;
+
 import discord4j.core.object.entity.User;
-import discord4j.core.object.entity.VoiceChannel;
+
+import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.presence.Presence;
 import discord4j.core.object.presence.Status;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;

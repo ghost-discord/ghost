@@ -1,7 +1,7 @@
 package com.github.coleb1911.ghost2.database.entities;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.util.Snowflake;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

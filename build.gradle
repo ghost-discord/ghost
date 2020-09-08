@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'java-library'
-    id 'jacoco'
     id 'org.springframework.boot' version '2.2.4.RELEASE'
 }
 
@@ -21,46 +20,44 @@ repositories {
 dependencies {
     // Spring and Hibernate
     // Logback is excluded in order to avoid conflict with TinyLog
-    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.2.4.RELEASE') {
+    implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.3.3.RELEASE') {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
     }
 
     // Included to deserialize timestamps from JSON
-    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.10.2'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.2'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.2'
 
     // Spring Web for consuming REST APIs
     // Logging framework is, again, excluded to avoid conflict
-    implementation group: 'org.springframework.data', name: 'spring-data-rest-webmvc', version: '3.2.4.RELEASE'
+    implementation group: 'org.springframework.data', name: 'spring-data-rest-webmvc', version: '3.3.3.RELEASE'
 
     // Other libraries & APIs
-    implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.0.12'
-    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.33'
-    implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.10'
-    implementation group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    implementation group: 'com.discord4j', name: 'discord4j-core', version: '3.1.0'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.3.9.RELEASE'
+    implementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.9.11.RELEASE'
+    implementation group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.50'
+    implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.12'
+    implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
     implementation group: 'org.tinylog', name: 'tinylog', version: '1.3.6'
     implementation group: 'org.tinylog', name: 'slf4j-binding', version: '1.3.6'
-    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.1'
+    implementation group: 'com.zaxxer', name: 'HikariCP', version: '3.4.5'
     implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.9'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.16'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-    implementation group: 'org.jsoup', name: 'jsoup', version: '1.12.1'
-    implementation group: 'net.imagej', name: 'ij', version: '1.53b'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+    implementation group: 'net.imagej', name: 'ij', version: '1.53d'
 
     // JUnit
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.0'
-    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.25.1'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.2.4'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.2'
+    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.27.1'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.5.10'
 
     // Apache utilities
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.19'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-
-    // Explicitly declare Netty 0.8.14 for Discord4J
-    // Using 0.9.x causes a NoClassDefFoundError for reactor.netty.NettyPipeline$SendOptions
-    implementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.14.RELEASE'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 }
 
 test {
@@ -106,17 +103,4 @@ clean {
     delete "${rootDir}/bt_temp"
     delete "${rootDir}/bt_out"
     delete "${rootDir}/bt_xplatform"
-}
-
-jacoco {
-    toolVersion = "0.8.4"
-    reportsDir = file("$buildDir/jacoco")
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination file("${buildDir}/jacocoHtml")
-    }
 }

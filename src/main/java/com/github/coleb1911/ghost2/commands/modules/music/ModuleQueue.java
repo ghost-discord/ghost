@@ -9,12 +9,12 @@ import com.github.coleb1911.ghost2.music.MusicUtils;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.GuildChannel;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.pmw.tinylog.Logger;
 
@@ -68,6 +68,7 @@ public final class ModuleQueue extends Module {
                 return;
             }
 
+
             PermissionSet perms = ((GuildChannel) ctx.getChannel()).getEffectivePermissions(ctx.getSelf().getId()).block();
             if (perms != null &&
                     !perms.containsAll(List.of(Permission.MANAGE_MESSAGES, Permission.ADD_REACTIONS))) {
@@ -77,7 +78,7 @@ public final class ModuleQueue extends Module {
 
             init();
             update();
-            ctx.getClient().getEventDispatcher().on(ReactionAddEvent.class)
+            ctx.getGateway().on(ReactionAddEvent.class)
                     .filter(e -> e.getMessageId().equals(embedMessage.getId()))
                     .filter(e -> e.getUserId().equals(ctx.getInvoker().getId()))
                     .timeout(Duration.ofSeconds(10L), e -> embedMessage.removeAllReactions().subscribe())

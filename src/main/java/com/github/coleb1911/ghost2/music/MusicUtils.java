@@ -3,8 +3,8 @@ package com.github.coleb1911.ghost2.music;
 import com.github.coleb1911.ghost2.commands.meta.CommandContext;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.VoiceChannel;
-import discord4j.core.object.util.Permission;
+import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.rest.util.Permission;
 import org.springframework.lang.NonNull;
 import reactor.core.publisher.Mono;
 
