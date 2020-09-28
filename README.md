@@ -1,4 +1,6 @@
-![ghost2](https://ghost2-discord.github.io/ghost2/media/banner.png)
+<p align="center">
+  <img src="ghost-banner.svg" height=100>
+</p>
 
 # ghost2 [![Build Status](https://travis-ci.org/ghost2-discord/ghost2.svg?branch=master)](https://travis-ci.org/ghost2-discord/ghost2) [![Maintainability](https://api.codeclimate.com/v1/badges/4fc3a95b114638f25db6/maintainability)](https://codeclimate.com/github/ghost2-discord/ghost2/maintainability) [![Gitter](https://badges.gitter.im/ghost2-dev/community.svg)](https://gitter.im/ghost2-dev/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
