@@ -1,5 +1,6 @@
 @SuppressWarnings("JavaModuleNaming")
 open module ghost2.main {
+    //contributing
     requires java.annotation;
     requires java.validation;
     requires java.persistence;
