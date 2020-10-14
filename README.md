@@ -2,7 +2,7 @@
   <img src="ghost-banner.svg" height=100>
 </p>
 
-# ghost [![Build Status](https://travis-ci.org/ghost2-discord/ghost2.svg?branch=master)](https://travis-ci.org/ghost2-discord/ghost2) [![Maintainability](https://api.codeclimate.com/v1/badges/4fc3a95b114638f25db6/maintainability)](https://codeclimate.com/github/ghost2-discord/ghost2/maintainability) [![Gitter](https://badges.gitter.im/ghost2-dev/community.svg)](https://gitter.im/ghost2-dev/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+# ghost [![Build Status](https://travis-ci.org/ghost2-discord/ghost2.svg?branch=master)](https://travis-ci.org/ghost2-discord/ghost2) [![Maintainability](https://api.codeclimate.com/v1/badges/4fc3a95b114638f25db6/maintainability)](https://codeclimate.com/github/ghost2-discord/ghost2/maintainability) [![Discord](https://img.shields.io/discord/766023774583128104?color=7289DA&label=discord&logo=discord&logoColor=white)](https://discord.gg/JAHk4Vy)
 
 ghost is a modular, multi-feature Discord bot powered by Discord4J and Spring.
 
