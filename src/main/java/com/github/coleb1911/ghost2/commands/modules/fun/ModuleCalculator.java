@@ -79,53 +79,6 @@ public final class ModuleCalculator extends Module {
         ctx.getChannel().createMessage("result is " + result);
     }
 
-/*
-    //@ReflectiveAccess
-  public void involk(@NotNull final CommandContext ctx) {
 
-
-        List<String> Args = ctx.getArgs();
-
-        if (Args.size() != 3) {
-            ctx.getChannel().createMessage("this calculation is not in the correct format, please follow the format of (number calculation number)");
-        }
-
-        boolean incorrectInput = false;
-        for (int i = 0; i < Args.size(); i++) {
-            if (i % 2 == 0 && !incorrectInput) {
-                try {
-                    double f = Double.parseDouble(Args.get(i));
-                } catch (Exception e) {
-                    ctx.getChannel().createMessage("You entered an invalid number, please try this command again with a valid number");
-                    incorrectInput = true;
-                }
-            }
-
-        }
-
-        double result = 0;
-        double num1 = Double.parseDouble((String) Args.get(0));
-        double num2 = Double.parseDouble((String) Args.get(2));
-
-        if(Args.get(1).compareTo("+") == 0){
-            result = num1 + num2;
-        }
-        else if(Args.get(1).compareTo("-") == 0){
-            result = num1 - num2;
-        }
-        else if(Args.get(1).compareTo("*") == 0){
-            result = num1 * num2;
-        }
-        else if(Args.get(1).compareTo("/") == 0){
-            result = num1 / num2;
-        }
-        ctx.getChannel().createMessage("result is " + result);
-  }
-
-//    @Override
-//    public void invoke(@NotNull CommandContext ctx) {
-
-//    }
-*/
 
 }
